@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 			//std::cout << "\nLibrary path\n" << dll_path;
 			const char* path = "IDK.dll";
 
-			HMODULE handle = LoadLibraryA(dll_path);
+			HMODULE handle = LoadLibraryA(path);
 
 			/*
 			if (handle)
