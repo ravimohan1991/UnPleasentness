@@ -203,7 +203,7 @@ void inline PawnIterator(UCanvas* Canvas)
 
 void MyPostRender (UCanvas* Canvas)
 {
-    if ( !ValidRender(Canvas) ) return;
+	if ( !ValidRender(Canvas) ) return;
 
 	Me = Canvas->Viewport->Actor;
 
@@ -215,53 +215,62 @@ void MyPostRender (UCanvas* Canvas)
 
 	if(bSettings)
 	{
-        Hook.cM->DrawBox(Canvas,10,340,134,137);
+		Hook.cM->DrawBox(Canvas,10,340,134,137);
 		Hook.cM->DrawSettings(Canvas);
 	}
 
 	if(bInfo)
 	{
-	    Hook.cM->DrawBox(Canvas,10,501,134,137);
+		Hook.cM->DrawBox(Canvas,10,501,134,137);
 		Hook.cM->MyInfos(Canvas);
 	}
 }
 
 typedef void(WINAPI *tPostRender)(struct FSceneNode *);
 tPostRender oPostRender = NULL;
-void WINAPI xPostRender(struct FSceneNode *FS)
+int WINAPI xPostRender(struct FSceneNode *FS)
 {
-	std::cout << "Taking detour\n";
+	log_add("Taking detour for PostRender");
 
 	oPostRender(FS);
 	MyPostRender(FS->Viewport->Canvas);
+
+	return 1;
 }
 
 DWORD WINAPI LoaderThread( LPVOID lpParam )
 {
-	std::cout << "Loader thread started for Render.dll hooking\n";
+	log_add("LoaderThread spawned. Attempt to hook into Render.dll");
 
 	HMODULE hDll = LoadLibraryA("Render.dll");
-	std::cout << hDll << " \n";
 
 	if (hDll != nullptr)
 	{
-		std::cout << "Got handle from Render.dll \n";
+		log_add("Got handle from Render.dll at address %x", hDll);
 	}
 	else
 	{
-		std::cout << GetLastError();
+		log_add("Couldn't get hold of the handle. Last error: %u", GetLastError());
+
+		return getchar();
 	}
 
 	void* pAddress = (void*)GetProcAddress(hDll, "?PostRender@URender@@UAEXPAUFSceneNode@@@Z");
 
-	while(!hDll) 
+	if (pAddress != nullptr)
 	{
-		Sleep(333); 
-		LoadLibraryA("Render.dll");//GetModuleHandleA("Render.dll");
+		log_add("Attempt to hook at address %x", pAddress);
 	}
-	std::cout << "Attempting detour at address " << pAddress << "\n";
+	else
+	{
+		log_add("Couldn't hook into the PostRender routine");
+
+		return getchar();
+	}
 	
-	oPostRender = (tPostRender)DetourFunction((BYTE*)pAddress,(BYTE*)xPostRender);
+	oPostRender = (tPostRender)DetourFunction((PBYTE)pAddress,(PBYTE)xPostRender);
+
+	log_add("Detour done with original %x replaced", oPostRender);
 
 	return 1;
 }
@@ -303,7 +312,7 @@ BOOL __stdcall DllMain(HMODULE hDll, DWORD reason, PVOID lpReserved)
  */
 void WINAPI MyProcessEvent(class UFunction* Function, void* Parms, void* Result)
 {
-	std::cout << "MyProcessEvent Redirection";
+	log_add("MyProcess Event");
 
 	DWORD Bumpeh = Function->GetIndex();
 	if (Bump)
@@ -452,7 +461,7 @@ void pPreRender()
  *		Used in this case to Redirect the most important function of all - ProcessEvent
  *
  */
-void ReDirectFunction(const char* strDllName, const char* strFunctionName, DWORD newFuncAddy)
+int ReDirectFunction(const char* strDllName, const char* strFunctionName, DWORD newFuncAddy)
 {
 	DWORD                       dwBackup;
 	DWORD                       dwIndex;
@@ -467,14 +476,21 @@ void ReDirectFunction(const char* strDllName, const char* strFunctionName, DWORD
 	PIMAGE_OPTIONAL_HEADER      pOptionalHeader;
 	PIMAGE_NT_HEADERS           pPeHeader;
 	PSTR                        strCurrent;
-	hmHL = LoadLibraryA("Engine.dll"); // unicode love
+	hmHL = LoadLibraryA(strDllName); // unicode love
 
-	std::cout << "Attempting redirect " << hmHL << "\n";
+	log_add("Attempting redirect with hooked %s", strDllName);
 
 	if (hmHL == nullptr)
-		return;
+	{
+		log_add("Couldn't hook %s", strDllName);
 
-	std::cout << "done";
+		return getchar();
+	}
+	else
+	{
+		log_add("Found the handle at address %x", hmHL);
+	}
+
 	pDosHeader = PIMAGE_DOS_HEADER(hmHL);
 	dwOffset = pDosHeader->e_lfanew;
 	pPeHeader = PIMAGE_NT_HEADERS(long(hmHL) + dwOffset);
@@ -482,12 +498,33 @@ void ReDirectFunction(const char* strDllName, const char* strFunctionName, DWORD
 	pDataDirectory = pOptionalHeader->DataDirectory;
 	dwOffset = pDataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
 	pImportDescriptor = PIMAGE_IMPORT_DESCRIPTOR(long(hmHL) + dwOffset);
-	for (dwIndex = 0; true; dwIndex++)
+
+	/*for (dwIndex = 0; true; dwIndex++)
 	{
+		log_add("%u", dwIndex);
 		dwOffset = pImportDescriptor[dwIndex].Name;
 		strCurrent = PSTR(long(hmHL) + dwOffset);
-		if (stricmp(strCurrent, strDllName) == 0) break;
+		if (stricmp(strCurrent, strDllName) == 0)
+		{
+			break;
+		}
+	}*/
+
+	strCurrent = (PSTR)"Hmm";
+	dwIndex = 0;
+
+	while (stricmp(strCurrent, strDllName) != 0)
+	{
+		log_add("dwIndex: %u, strCurrent: %s", dwIndex, strCurrent);
+
+		dwOffset = pImportDescriptor[dwIndex].Name;
+		strCurrent = PSTR(long(hmHL) + dwOffset);
+
+		dwIndex++;
 	}
+
+	log_add("1. dwIndex is %u", dwIndex);
+
 	dwOffset = pImportDescriptor[dwIndex].FirstThunk;
 	pdwIAT = PDWORD(long(hmHL) + dwOffset);
 	dwOffset = pImportDescriptor[dwIndex].OriginalFirstThunk;
@@ -499,8 +536,14 @@ void ReDirectFunction(const char* strDllName, const char* strFunctionName, DWORD
 		strCurrent = PSTR(pImportName->Name);
 		if (stricmp(strCurrent, strFunctionName) == 0) break;
 	}
+
+	log_add("2. dwIndex is %u", dwIndex);
+
 	VirtualProtect(&pdwIAT[dwIndex], sizeof(DWORD), PAGE_READWRITE, &dwBackup);
 	orgProcessEvent = (PrEv)pdwIAT[dwIndex]; // ding ding
 	pdwIAT[dwIndex] = PtrToUlong(newFuncAddy);
 	VirtualProtect(&pdwIAT[dwIndex], sizeof(DWORD), dwBackup, &dwOffset);
+
+	log_add("======== Injection success =========");
+	return 1;
 }

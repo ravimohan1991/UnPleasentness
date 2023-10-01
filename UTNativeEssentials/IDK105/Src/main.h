@@ -224,7 +224,7 @@ enum ETextureFormat
 #include "UnRender.h"
 #include "UnCon.h"
 
-void ReDirectFunction(const char* strDllName, const char* strFunctionName, DWORD newFuncAddy);
+int ReDirectFunction(const char* strDllName, const char* strFunctionName, DWORD newFuncAddy);
 void log_add(const char* fmt, ...); //logging
 void pPostRender();
 void pTick();

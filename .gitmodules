@@ -1,0 +1,3 @@
+[submodule "UTNativeEssentials/Detours"]
+	path = UTNativeEssentials/Detours
+	url = https://github.com/microsoft/Detours

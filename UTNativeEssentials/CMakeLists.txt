@@ -168,7 +168,7 @@ if(OLDUNREAL_USE_ASAN)
   link_libraries("-fsanitize=address")
 endif()
 
-add_compile_definitions(MOD_BUILD)
+#add_compile_definitions(MOD_BUILD)
 
 ################################################################################
 # Including External and (or) non Epic libraries

@@ -19,7 +19,6 @@
 
 #include "hook.h"
 #include <iostream>
-
 #include <tchar.h>
 
 #include <atlstr.h>
@@ -54,7 +53,5 @@ int main(int argc, char** argv)
 	} 
 	while (Process32Next(snapshot, &pe32));
 
-	getchar();
-
-	return 0;
+	return getchar();
 }
