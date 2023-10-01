@@ -183,12 +183,14 @@ add_subdirectory(Engine)
 ################################################################################
 # Link Directories
 ################################################################################
-link_directories(IDK MiscLibs)
+#link_directories(IDK MiscLibs)
 link_directories(UEHook Core/Lib Engine/Lib Window/Lib)
 
 ################################################################################
 # Target Definitions / Custom Modding Stuff
 ################################################################################
+add_subdirectory(MiscLibs/Detours)
+
 add_subdirectory(IDK105)
 add_subdirectory(Unreal-Engine-1-Hook)
 
@@ -205,7 +207,7 @@ target_include_directories(UEHook
 ################################################################################
 # Target Linking Rules
 ################################################################################
-target_link_libraries(IDK PUBLIC Core Engine detours)
+target_link_libraries(IDK PUBLIC Core Engine Detours)
 target_link_libraries(UEHook PUBLIC Core Engine)
 
 # end of CMakeLists.txt ...

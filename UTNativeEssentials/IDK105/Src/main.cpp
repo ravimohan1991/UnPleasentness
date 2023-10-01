@@ -268,7 +268,7 @@ DWORD WINAPI LoaderThread( LPVOID lpParam )
 		return getchar();
 	}
 	
-	oPostRender = (tPostRender)DetourFunction((PBYTE)pAddress,(PBYTE)xPostRender);
+	//oPostRender = (tPostRender)DetourFunction((PBYTE)pAddress,(PBYTE)xPostRender);
 
 	log_add("Detour done with original %x replaced", oPostRender);
 
