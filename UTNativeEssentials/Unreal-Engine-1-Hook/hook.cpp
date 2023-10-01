@@ -29,8 +29,8 @@ int main(int argc, char** argv)
 	HANDLE snapshot = 0;
 	HANDLE process = 0;
 	HMODULE hDll = 0;
-	DWORD exitCode;
-	const char* dll_path = "G:\\SteamLibrary\\UnrealTournamentGOTY\\ChatDiamond\\ChatDiamondBin\\Win\\x86\\Release\\IDK.dll";
+	//DWORD exitCode;
+	//const char* dll_path = "G:\\SteamLibrary\\UnrealTournamentGOTY\\ChatDiamond\\ChatDiamondBin\\Win\\x86\\Release\\IDK.dll";
 	void* lpBaseAddress = nullptr;
 
 	PROCESSENTRY32 pe32 = { 0 };
@@ -45,40 +45,16 @@ int main(int argc, char** argv)
 		if (wcscmp(pe32.szExeFile, L"UnrealTournament.exe") == 0) 
 		{
 			std::cout << "Process found, injecting code\n";
-
-			//process = OpenProcess(PROCESS_ALL_ACCESS, true, pe32.th32ProcessID);
-			//lpBaseAddress = VirtualAllocEx(process, NULL, strlen(dll_path) + 1, MEM_COMMIT, PAGE_READWRITE);
-
-			//WriteProcessMemory(process, lpBaseAddress, dll_path, strlen(dll_path) + 1, NULL);
-
-			//std::cout << "\nLibrary path\n" << dll_path;
 			const char* path = "IDK.dll";
 
 			HMODULE handle = LoadLibraryA(path);
 
-			/*
-			if (handle)
-			{
-				std::cout << "Loaded Library\n";
-			}
-			else
-			{
-				std::cout << "\n" << GetLastError();
-			}*/
-
-			//hDll = GetModuleHandleA("Render.dll");
-			//HANDLE thread = CreateRemoteThread(process, NULL, 0, (LPTHREAD_START_ROUTINE)GetProcAddress(hDll, "LoadLibraryA"), lpBaseAddress, 0, NULL);
-			
-			//WaitForSingleObject(thread, INFINITE);
-			//GetExitCodeThread(thread, &exitCode);
-
-			//VirtualFreeEx(process, lpBaseAddress, 0, MEM_RELEASE);
-			//CloseHandle(thread);
-			//CloseHandle(process);
 			break;
 		}
 	} 
 	while (Process32Next(snapshot, &pe32));
+
+	getchar();
 
 	return 0;
 }

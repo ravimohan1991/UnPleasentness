@@ -51,7 +51,7 @@ void log_add(const char* fmt, ...)
 		return;
 	}
 
-	FILE* fp;
+	//FILE* fp;
 	struct tm* current_tm;
 	time_t current_time;
 	time(&current_time);
@@ -232,7 +232,7 @@ void WINAPI xPostRender(struct FSceneNode *FS)
 {
 	std::cout << "Taking detour\n";
 
-    oPostRender(FS);
+	oPostRender(FS);
 	MyPostRender(FS->Viewport->Canvas);
 }
 
@@ -240,9 +240,10 @@ DWORD WINAPI LoaderThread( LPVOID lpParam )
 {
 	std::cout << "Loader thread started for Render.dll hooking\n";
 
-    HMODULE hDll = GetModuleHandleA("Render.dll");
+	HMODULE hDll = LoadLibraryA("Render.dll");
+	std::cout << hDll << " \n";
 
-	if (hDll)
+	if (hDll != nullptr)
 	{
 		std::cout << "Got handle from Render.dll \n";
 	}
@@ -251,13 +252,14 @@ DWORD WINAPI LoaderThread( LPVOID lpParam )
 		std::cout << GetLastError();
 	}
 
-	void *pAddress = (void*)GetProcAddress(hDll, "?PostRender@URender@@UAEXPAUFSceneNode@@@Z");
-     
+	void* pAddress = (void*)GetProcAddress(hDll, "?PostRender@URender@@UAEXPAUFSceneNode@@@Z");
+
 	while(!hDll) 
-    { 
-        Sleep(333); 
-		GetModuleHandleA("Render.dll");
-    } 
+	{
+		Sleep(333); 
+		LoadLibraryA("Render.dll");//GetModuleHandleA("Render.dll");
+	}
+	std::cout << "Attempting detour at address " << pAddress << "\n";
 	
 	oPostRender = (tPostRender)DetourFunction((BYTE*)pAddress,(BYTE*)xPostRender);
 
@@ -266,24 +268,26 @@ DWORD WINAPI LoaderThread( LPVOID lpParam )
 
 BOOL __stdcall DllMain(HMODULE hDll, DWORD reason, PVOID lpReserved)
 {
-    switch(reason)
-    {
-        case DLL_PROCESS_ATTACH:
-        {
-			std::cout << "Attaching dll to unreal tournament process \n";
+	switch(reason)
+	{
+		case DLL_PROCESS_ATTACH:
+		{
+			log_add("Attaching dll to unreal tournament process");
+
 			CreateThread(0, 0, LoaderThread, 0, 0, 0);
 			DisableThreadLibraryCalls(hDll);
-			/*
-			log_add("===================================================");
+			
+			/*log_add("===================================================");
 			log_add("Attaching DLL");
 			DisableThreadLibraryCalls(hDll);
-			ReDirectFunction("Core.dll", "?ProcessEvent@UObject@@UAEXPAVUFunction@@PAX1@Z", (DWORD)&MyProcessEvent); // redirect ProcessEvent
-            */
+			ReDirectFunction("Core.dll", "?ProcessEvent@UObject@@UAEXPAVUFunction@@PAX1@Z", (DWORD)&MyProcessEvent); // redirect ProcessEvent*/
 			return true;
-        }
-        default:
-            return false;
-    }
+		}
+		default:
+		{
+			return false;
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -299,6 +303,8 @@ BOOL __stdcall DllMain(HMODULE hDll, DWORD reason, PVOID lpReserved)
  */
 void WINAPI MyProcessEvent(class UFunction* Function, void* Parms, void* Result)
 {
+	std::cout << "MyProcessEvent Redirection";
+
 	DWORD Bumpeh = Function->GetIndex();
 	if (Bump)
 	{
@@ -336,7 +342,7 @@ void WINAPI MProcessEvent(class UFunction* Function, void* Parms, void* Result)
 	for (INT i = 0; i < func.Len(); i++)
 	{
 		buffer[i] = func.Mid(i, 1);
-		sprintf(&buffer[i], "%s", func.Mid(i, 1));
+		//sprintf(&buffer[i], "%s", func.Mid(i, 1));
 	}
 	log_add("FUNC %s  %d", buffer, Function->GetIndex()); // log all functions called through ProcessEvent
 
@@ -461,11 +467,14 @@ void ReDirectFunction(const char* strDllName, const char* strFunctionName, DWORD
 	PIMAGE_OPTIONAL_HEADER      pOptionalHeader;
 	PIMAGE_NT_HEADERS           pPeHeader;
 	PSTR                        strCurrent;
-	hmHL = GetModuleHandleA("Engine.dll"); // unicode love
+	hmHL = LoadLibraryA("Engine.dll"); // unicode love
 
-	if (!hmHL)
+	std::cout << "Attempting redirect " << hmHL << "\n";
+
+	if (hmHL == nullptr)
 		return;
 
+	std::cout << "done";
 	pDosHeader = PIMAGE_DOS_HEADER(hmHL);
 	dwOffset = pDosHeader->e_lfanew;
 	pPeHeader = PIMAGE_NT_HEADERS(long(hmHL) + dwOffset);

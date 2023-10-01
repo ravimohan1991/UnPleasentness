@@ -16,30 +16,15 @@ set(CMAKE_PROJECT_VERSION_MAJOR "0")
 set(CMAKE_PROJECT_VERSION_MINOR "1")
 set(CMAKE_PROJECT_VERSION_PATCH "0")
 
-# uncomment this to see compiler/linker commands
-# set(CMAKE_VERBOSE_MAKEFILE ON)
-
 include(CheckCCompilerFlag)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-# Directory Structure Assumption
-# UTGOTY
-#  - ChatDiamond
-#      - UTNativeEssentials
-#         - ChatDiamond
-#             - Inc
-#             - Src
-#      - Classes
-#      - ChatDiamondBin
-#  - System
 
 # Control where the static and shared libraries are built
 # We would want a semi-packaging fashioned way where all bianries are together
 # whilst accessible from IDE (local debugger for instance!).
 set(REPOSITORYROOT "${CMAKE_CURRENT_SOURCE_DIR}/../")
-# Global variable for Karma's Libraries
-set(CHATDIAMONDLIBRARYFOLDER "CompanionLibraries")
 
 # UT GOTY directory
 set(UTGOTYROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../")
@@ -113,27 +98,24 @@ message(STATUS "****************************************************************
 ################################################################################
 # Set the output directory
 ################################################################################
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${REPOSITORYROOT}/ChatDiamondBin/${PLATFORM_PREFIX}/${OLDUNREAL_CPU}/${CMAKE_BUILD_TYPE}")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${REPOSITORYROOT}/ChatDiamondBin/${PLATFORM_PREFIX}/${OLDUNREAL_CPU}/${CMAKE_BUILD_TYPE}")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${REPOSITORYROOT}/ChatDiamondBin/${PLATFORM_PREFIX}/${OLDUNREAL_CPU}/${CMAKE_BUILD_TYPE}")
-
-
-################################################################################
-# Locate or Build all 3rd party headers and libs# we need add_link_options
-################################################################################
-
-#include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindUE1Dependencies.cmake)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${REPOSITORYROOT}/UnpleasentnessBin/${PLATFORM_PREFIX}/${OLDUNREAL_CPU}/${CMAKE_BUILD_TYPE}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${REPOSITORYROOT}/UnpleasentnessBin/${PLATFORM_PREFIX}/${OLDUNREAL_CPU}/${CMAKE_BUILD_TYPE}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${REPOSITORYROOT}/UnpleasentnessBin/${PLATFORM_PREFIX}/${OLDUNREAL_CPU}/${CMAKE_BUILD_TYPE}")
 
 ################################################################################
 # Set compiler and linker flags
 ################################################################################
 
-# use multi-threaded version of C runtime lib and link it statically
-add_compile_definitions(_CRT_SECURE_NO_WARNINGS=1)
-add_compile_definitions(_CRT_NO_VA_START_VALIDATION)
 add_compile_definitions(UNICODE=1)
 add_compile_definitions(_UNICODE=1)
-add_compile_definitions(WIN32=1)
+
+
+if(WINDOWS)
+  add_compile_definitions(_CRT_SECURE_NO_WARNINGS=1)
+  add_compile_definitions(_CRT_NO_VA_START_VALIDATION)
+
+  add_compile_definitions(WIN32=1)
+endif()
 
 if(LINUX)
   add_compile_definitions(__LINUX_ARM__)
@@ -173,7 +155,7 @@ endif()
 
 # the recursive garbage collector needs a lot of stack space
 set(CMAKE_EXE_LINKER_FLAGS
-    "${CMAKE_EXE_LINKER_FLAGS} /STACK:16000000,1000000 /LTCG"
+    "${CMAKE_EXE_LINKER_FLAGS} /STACK:16000000,1000000"
 )
 
 if(CMAKE_COMPILER_IS_GNUCC OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
@@ -208,7 +190,6 @@ link_directories(UEHook Core/Lib Engine/Lib Window/Lib)
 # Target Definitions / Custom Modding Stuff
 ################################################################################
 add_subdirectory(IDK105)
-
 add_subdirectory(Unreal-Engine-1-Hook)
 
 target_include_directories(IDK
