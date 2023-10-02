@@ -230,10 +230,12 @@ typedef void(WINAPI *tPostRender)(struct FSceneNode *);
 tPostRender oPostRender = NULL;
 int WINAPI xPostRender(struct FSceneNode *FS)
 {
-	log_add("Taking detour for PostRender");
+	//log_add("Taking detour for PostRender");
 
 	oPostRender(FS);
 	MyPostRender(FS->Viewport->Canvas);
+
+	GLog->Logf(TEXT("Detour is in action"));
 
 	return 1;
 }
@@ -268,9 +270,18 @@ DWORD WINAPI LoaderThread( LPVOID lpParam )
 		return getchar();
 	}
 	
-	//oPostRender = (tPostRender)DetourFunction((PBYTE)pAddress,(PBYTE)xPostRender);
+	/*oPostRender errorCode = (tPostRender)DetourAttach((PBYTE)pAddress, (PBYTE)xPostRender)*/;
 
-	log_add("Detour done with original %x replaced", oPostRender);
+	oPostRender = (tPostRender)DetourFindFunction("Render.dll", "?PostRender@URender@@UAEXPAUFSceneNode@@@Z");
+
+	DetourRestoreAfterWith();
+
+	DetourTransactionBegin();
+	DetourUpdateThread(GetCurrentThread());
+	LONG errorCode = DetourAttach(&(PVOID&)oPostRender, xPostRender);
+	DetourTransactionCommit();
+
+	log_add("Detour done with original %i", errorCode);
 
 	return 1;
 }
