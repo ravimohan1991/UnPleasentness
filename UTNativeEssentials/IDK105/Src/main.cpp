@@ -237,7 +237,7 @@ DWORD oldProtect = PAGE_EXECUTE_READWRITE;
 void xPostRender(FSceneNode *FS)
 {
 	//oPostRender(FS);
-	//MyPostRender(FS->Viewport->Canvas);
+	MyPostRender(FS->Viewport->Canvas);
 
 	GLog->Logf(TEXT("Detour is in action"));
 }
@@ -303,12 +303,17 @@ BOOL __stdcall DllMain(HMODULE hDll, DWORD reason, PVOID lpReserved)
 
 			CreateThread(0, 0, LoaderThread, 0, 0, 0);
 			DisableThreadLibraryCalls(hDll);
-			
-			/*log_add("===================================================");
-			log_add("Attaching DLL");
-			DisableThreadLibraryCalls(hDll);
-			ReDirectFunction("Core.dll", "?ProcessEvent@UObject@@UAEXPAVUFunction@@PAX1@Z", (DWORD)&MyProcessEvent); // redirect ProcessEvent*/
 			return true;
+		}
+		case DLL_PROCESS_DETACH:
+		{
+			log_add("Gracefully detaching from the process");
+
+			DetourTransactionBegin();
+			DetourUpdateThread(GetCurrentThread());
+			DetourDetach(&(LPVOID&)oPostRender, xPostRender);
+			DetourTransactionCommit();
+			break;
 		}
 		default:
 		{
