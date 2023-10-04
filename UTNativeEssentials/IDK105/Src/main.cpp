@@ -236,26 +236,10 @@ DWORD oldProtect = PAGE_EXECUTE_READWRITE;
 
 void xPostRender(FSceneNode *FS)
 {
-	oPostRender(FS);
-	MyPostRender(FS->Viewport->Canvas);
+	//oPostRender(FS);
+	//MyPostRender(FS->Viewport->Canvas);
 
 	GLog->Logf(TEXT("Detour is in action"));
-}
-
-void* DetourJump(void* orig, void* dest)
-{
-	DWORD oldprot;
-	VirtualProtect(orig, 5, PAGE_EXECUTE_READWRITE, &oldprot);
-
-	DWORD orgJmp = DWORD(*((void**)((unsigned int)orig + 1))) + 5 + (unsigned int)orig;
-
-	*((unsigned char*)orig) = 0xE9; // 0xE9 = Jmp // 0xE8 = Call
-	*((void**)((unsigned int)orig + 1)) = (void*)(((unsigned int)dest) - (((unsigned int)orig) + 5));
-
-
-	VirtualProtect(orig, 5, oldprot, &oldprot);
-
-	return (void*)orgJmp;
 }
 
 DWORD WINAPI LoaderThread( LPVOID lpParam )
@@ -288,26 +272,12 @@ DWORD WINAPI LoaderThread( LPVOID lpParam )
 		return getchar();
 	}
 	
-	/*oPostRender errorCode = (tPostRender)DetourAttach((PBYTE)pAddress, (PBYTE)xPostRender)*/;
-
-	//oPostRender = DetourFindFunction("Core.dll", "?ProcessEvent@UObject@@UAEXPAVUFunction@@PAX1@Z");
 	oPostRender = (tPostRender)DetourFindFunction("Render.dll", "?PostRender@URender@@UAEXPAUFSceneNode@@@Z");
 	log_add("Another approach for hookable address %x, error code: %i", oPostRender, GetLastError());
 
-	//DetourRestoreAfterWith();
 
-	/*BYTE tempJMP[6] = {0xE9, 0x90, 0x90, 0x90, 0x90, 0xC3};
-
-	memcpy(JMP, tempJMP, 6);
-	DWORD JMPSize = ((DWORD)xPostRender - (DWORD)oPostRender - 5);
-
-	VirtualProtect((LPVOID)oPostRender, 6, PAGE_EXECUTE_READWRITE, &oldProtect);
-	memcpy(oldBytes, oPostRender, 6);
-	memcpy(&JMP[1], &JMPSize, 4);
-	memcpy(oPostRender, JMP, 6);
-	VirtualProtect((LPVOID)oPostRender, 6, oldProtect, 0);*/
-
-	//DetourJump((void*) oPostRender, (void*)xPostRender);
+	DetourRestoreAfterWith();
+	log_add("RestoreAfter %i", GetLastError());
 
 	DetourTransactionBegin();
 	log_add("Transaction begin %i", GetLastError());

@@ -180,12 +180,12 @@ int main()
 	{
 		while (Process32Next(snapshot, &entry) == TRUE)
 		{
-			if (wcscmp(entry.szExeFile, L"SimpleLoopSubject.exe") == 0)
+			if (wcscmp(entry.szExeFile, L"UnrealTournament.exe") == 0)
 			{
-				InjectDll(entry.th32ProcessID, L"DetoursExampule.dll");
+				InjectDll(entry.th32ProcessID, L"IDK.dll");
 				std::cout << "Enter to exit";
 				std::cin.get();
-				EjectDll(entry.th32ProcessID, L"DetoursExampule.dll");
+				EjectDll(entry.th32ProcessID, L"IDK.dll");
 				break;
 			}
 		}
