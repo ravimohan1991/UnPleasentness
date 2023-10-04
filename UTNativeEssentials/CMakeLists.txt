@@ -173,6 +173,7 @@ endif()
 ################################################################################
 # Including External and (or) non Epic libraries
 ################################################################################
+add_subdirectory(MiscLibs/Detours)
 
 ################################################################################
 # Epic Essentials
@@ -187,12 +188,13 @@ add_subdirectory(Engine)
 link_directories(UEHook Core/Lib Engine/Lib Window/Lib)
 
 ################################################################################
-# Target Definitions / Custom Modding Stuff
+# Native Labs
 ################################################################################
-add_subdirectory(MiscLibs/Detours)
-
 add_subdirectory(IDK105)
 add_subdirectory(Unreal-Engine-1-Hook)
+
+add_subdirectory(SimpleLoopSubject)
+add_subdirectory(DetourExampule)
 
 target_include_directories(IDK
     PRIVATE
@@ -209,5 +211,7 @@ target_include_directories(UEHook
 ################################################################################
 target_link_libraries(IDK PUBLIC Core Engine Detours)
 target_link_libraries(UEHook PUBLIC Core Engine)
+
+target_link_libraries(DetoursExampule PUBLIC Detours)
 
 # end of CMakeLists.txt ...
