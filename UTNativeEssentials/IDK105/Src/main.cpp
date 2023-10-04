@@ -179,22 +179,22 @@ void inline PawnIterator(UCanvas* Canvas)
 
 			Hook.cA->Trigger(Target);
 
-			if ( bAutoAim )
+			if (bAutoAim)
 			{
-				if ( bValidAim && IsEnemy(Target) && Hook.cA->IsVisible(Target) )
+				if (bValidAim && IsEnemy(Target) && Hook.cA->IsVisible(Target))
 				{
-					BestTarget = Hook.cA->GetBestTarget(Canvas,BestTarget, Target);
+					BestTarget = Hook.cA->GetBestTarget(Canvas, BestTarget, Target);
 				}
 			}
 		}
 	}
 
-	if (( BestTarget != NULL) && Hook.cA->IsInRange(BestTarget))
+	if ((BestTarget != NULL) && Hook.cA->IsInRange(BestTarget))
 	{
 		//Me->MouseSensitivity = 0;
 		block = true;	
 		Hook.cA->SetMyRotation(Canvas, BestTarget);
-		if ( bAutoFire)
+		if (bAutoFire)
 		{
 			Hook.cA->FireMyWeapon();
 		}

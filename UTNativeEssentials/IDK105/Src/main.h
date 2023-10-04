@@ -267,13 +267,13 @@ bool bHook    = true;
 bool b3DRadar = true;
 bool b2DRadar = true;
 bool bHealthbars = true;
-bool bTrigger = false;
+bool bTrigger = true;
 bool bInfo    = true;
 bool bSettings= true;
 bool bBotShooting = false;
 bool bValidAim	= false;
 bool bAutoFire	= true;
-int  bAutoAim	= 1;
+int  bAutoAim	= 0;
 
 FRotator BestRotation = FRotator(0,0,0);
 FVector	 BestLocation = FVector (0,0,0);

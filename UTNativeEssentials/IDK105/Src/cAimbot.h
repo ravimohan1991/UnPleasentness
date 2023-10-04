@@ -327,20 +327,21 @@ bool cAimbot::GoodAim ()
 DWORD wynik2;
 void cAimbot::Trigger (APawn* Target)
 {
-    if ( !bTrigger ) return;
+	if (!bTrigger) return;
 
-    FCheckResult R;
-    FVector X, Y, Z, Start,Dir,HisPos;
+	FCheckResult R;
+	FVector X, Y, Z, Start,Dir,HisPos;
 
 	GetAxes(MyCameraRotation,X,Y,Z);
 	Start = Me->Location + Me->EyeHeight * Z;
 	Dir = X * Me->CollisionRadius;
 
 	Me->XLevel->TraceVisible(Dir, R, Me, Start, TRACE_Pawns | TRACE_Level, 10000);
-    Target = (APawn*)R.Actor;
 
-	if ((R.Actor != NULL) && R.Actor->IsA(APawn::StaticClass()) && IsEnemy(Target))
+	APawn* hitPawn = Cast<APawn>(R.Actor);
+
+	if (hitPawn && hitPawn == Target && IsEnemy(Target))
 	{
-			CreateThread(0,0,MouseDown,0,0,&wynik2);
+		CreateThread(0, 0, MouseDown, 0, 0, &wynik2);
 	}
 }
