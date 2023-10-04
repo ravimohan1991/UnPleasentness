@@ -396,27 +396,27 @@ FColor GetTeamColor (APawn* Target)
 	}
 }
 
-void DrawText(UCanvas* Canvas,FString Str,float PosX,float PosY,FColor Color)
+void DrawText(UCanvas* Canvas, FString Str, float PosX, float PosY, FColor Color)
 {
     FColor TempColor = Canvas->Color;
-	Canvas->Color = FColor(0,0,0,255);
+	Canvas->Color = FColor(0, 0, 0, 255);
 
 	SetPos(PosX-1, PosY)
-	Canvas->WrappedPrintf(Canvas->SmallFont,0,L"%s",Str);
+	Canvas->WrappedPrintf(Canvas->SmallFont, 0, L"%s", Str);
 
 	SetPos(PosX+1, PosY)
-	Canvas->WrappedPrintf(Canvas->SmallFont,0,L"%s",Str);
+	Canvas->WrappedPrintf(Canvas->SmallFont, 0, L"%s", Str);
 
 	SetPos(PosX, PosY-1)
-	Canvas->WrappedPrintf(Canvas->SmallFont,0,L"%s",Str);
+	Canvas->WrappedPrintf(Canvas->SmallFont, 0, L"%s", Str);
 
 	SetPos(PosX, PosY+1)
-	Canvas->WrappedPrintf(Canvas->SmallFont,0,L"%s",Str);
+	Canvas->WrappedPrintf(Canvas->SmallFont, 0, L"%s", Str);
 
 
 	SetPos(PosX, PosY)
 	Canvas->Color = Color;
-	Canvas->WrappedPrintf(Canvas->SmallFont,0,L"%s",Str);
+	Canvas->WrappedPrintf(Canvas->SmallFont, 0, L"%s", Str);
 	Canvas->Color = TempColor;
 }
 

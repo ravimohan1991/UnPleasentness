@@ -18,8 +18,7 @@
  *
  ************************************************************************/
 
-#include <iostream>
-#include "windows.h"
+#include "hook.h"
 #include <TlHelp32.h>
 #include <tchar.h>
 
@@ -88,7 +87,7 @@ BOOL InjectDll(DWORD dwPID, LPCTSTR szDllPath)
 
 	if (!(hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPID)))
 	{
-		printf("OpenProcess(%d) failed!!!\n", dwPID);
+		log_add("OpenProcess(%d) failed", dwPID);
 		return FALSE;
 	}
 
@@ -147,7 +146,7 @@ BOOL EjectDll(DWORD dwPID, LPCTSTR szDllPath)
 
 	if (!(hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPID)))
 	{
-		printf("OpenProcess(%d) failed!!!\n", dwPID);
+		log_add("OpenProcess(%d) failed", dwPID);
 		CloseHandle(hSnapshot);
 		return FALSE;
 	}
@@ -182,8 +181,9 @@ int main()
 		{
 			if (wcscmp(entry.szExeFile, L"UnrealTournament.exe") == 0)
 			{
+				log_add("Process found, injecting custom code");
 				InjectDll(entry.th32ProcessID, L"IDK.dll");
-				std::cout << "Enter to exit";
+				log_add("Press Enter to unhook and exit");
 				std::cin.get();
 				EjectDll(entry.th32ProcessID, L"IDK.dll");
 				break;

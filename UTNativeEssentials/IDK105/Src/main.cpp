@@ -148,7 +148,7 @@ void GetCameraLocation (FVector &InputLocation, FRotator &InputRotation)
 
 void inline PawnIterator(UCanvas* Canvas)
 {
-	if (!bHook ) return;
+	if (!bHook || !Me) return;
 
 	if(b2DRadar)
 	{
@@ -160,45 +160,51 @@ void inline PawnIterator(UCanvas* Canvas)
 	LastTimerCheck = Me->Level->TimeSeconds;
 
 	APawn* BestTarget = NULL;
-	GetCameraLocation(MyCameraLocation,MyCameraRotation);
+	GetCameraLocation(MyCameraLocation, MyCameraRotation);
 	bValidAim = (Hook.cA->GoodAim() && Hook.cA->IsGoodWeapon() && !bTrigger);
 
-	for (AObjectIterator<APawn> Pawn = AObjectIterator<APawn>(DefPawn); Pawn; ++Pawn)
+	if (!Me->Level->PawnList)
 	{
-	    APawn *Target= (APawn*)*Pawn;
+		return;
+	}
 
-		if ( ValidTarget(Target))
+	for(APawn* Pawn = Me->Level->PawnList; Pawn->nextPawn != nullptr; Pawn = Pawn->nextPawn)
+	{
+		APawn *Target= Pawn;
+
+		if (ValidTarget(Target))
 		{
-		    Hook.cR->DrawPlayerOnRadar(Canvas,Target);
-		    Hook.cR->DrawPlayer2DRadar(Canvas,Target);
+			//Hook.cR->DrawPlayerOnRadar(Canvas, Target);
+			//Hook.cR->DrawPlayer2DRadar(Canvas, Target);
 
 			Hook.cA->Trigger(Target);
 
-			 if ( bAutoAim )
-			 {
-			     if ( bValidAim && IsEnemy(Target) && Hook.cA->IsVisible(Target) )
-				 {
-				     BestTarget = Hook.cA->GetBestTarget(Canvas,BestTarget, Target);
-				 }
-			 }
-		 }
-	 }
-	 if (( BestTarget != NULL) && Hook.cA->IsInRange(BestTarget))
-	 {
-	     //Me->MouseSensitivity = 0;
-		 block = true;	
-	     Hook.cA->SetMyRotation(Canvas, BestTarget);
-		 if ( bAutoFire)
-		 {
-		     Hook.cA->FireMyWeapon();
-		 }
-	 }
-	 else
-	 {
-	     //Me->MouseSensitivity = 3;
+			if ( bAutoAim )
+			{
+				if ( bValidAim && IsEnemy(Target) && Hook.cA->IsVisible(Target) )
+				{
+					BestTarget = Hook.cA->GetBestTarget(Canvas,BestTarget, Target);
+				}
+			}
+		}
+	}
+
+	if (( BestTarget != NULL) && Hook.cA->IsInRange(BestTarget))
+	{
+		//Me->MouseSensitivity = 0;
+		block = true;	
+		Hook.cA->SetMyRotation(Canvas, BestTarget);
+		if ( bAutoFire)
+		{
+			Hook.cA->FireMyWeapon();
+		}
+	}
+	else
+	{
+		//Me->MouseSensitivity = 3;
 		 Hook.cA->StopMyWeapon();
 		 block = false;
-	 }
+	}
 }
 
 void MyPostRender (UCanvas* Canvas)
@@ -208,7 +214,8 @@ void MyPostRender (UCanvas* Canvas)
 	Me = Canvas->Viewport->Actor;
 
 	PawnIterator(Canvas);
-	CheckKeys(Canvas);		
+	CheckKeys(Canvas);
+
 	Init(Canvas);
 		
 	if (!bHook ) return;
@@ -229,17 +236,11 @@ void MyPostRender (UCanvas* Canvas)
 typedef void(*tPostRender)(FSceneNode *);
 tPostRender oPostRender = NULL;
 
-BYTE JMP[6] = { 0 };
-BYTE oldBytes[6] = { 0 };
-
-DWORD oldProtect = PAGE_EXECUTE_READWRITE;
-
 void xPostRender(FSceneNode *FS)
 {
-	//oPostRender(FS);
 	MyPostRender(FS->Viewport->Canvas);
 
-	GLog->Logf(TEXT("Detour is in action"));
+	//GLog->Logf(TEXT("Detour is in action"));
 }
 
 DWORD WINAPI LoaderThread( LPVOID lpParam )
@@ -313,7 +314,7 @@ BOOL __stdcall DllMain(HMODULE hDll, DWORD reason, PVOID lpReserved)
 			DetourUpdateThread(GetCurrentThread());
 			DetourDetach(&(LPVOID&)oPostRender, xPostRender);
 			DetourTransactionCommit();
-			break;
+			return true;
 		}
 		default:
 		{
