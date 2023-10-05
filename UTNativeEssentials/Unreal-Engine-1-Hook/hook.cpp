@@ -25,14 +25,12 @@
 
 MyFrame* MyApp::m_Frame = nullptr;
 
-wxIMPLEMENT_APP_NO_MAIN(MyApp);// call wxEntry() in this main()
+wxIMPLEMENT_APP_CONSOLE(MyApp);// call wxEntry() in this main()
 
 bool MyApp::OnInit()
 {
 	m_Frame = new MyFrame();
 	m_Frame->Show(true);
-
-	SetTopWindow(m_Frame);
 
 	return true;
 }
@@ -223,9 +221,9 @@ BOOL EjectDll(DWORD dwPID, LPCTSTR szDllPath)
 	return TRUE;
 }
 
+/*
 int main()
 {
-
 	SetPrivilege(SE_DEBUG_NAME, TRUE);
 	PROCESSENTRY32 entry;
 
@@ -252,4 +250,4 @@ int main()
 	CloseHandle(snapshot);
 
 	return 0;
-}
+}*/

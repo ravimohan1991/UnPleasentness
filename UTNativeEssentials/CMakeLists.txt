@@ -18,8 +18,8 @@ set(CMAKE_PROJECT_VERSION_PATCH "0")
 
 include(CheckCCompilerFlag)
 include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
 
+include(CMakePackageConfigHelpers)
 
 # Control where the static and shared libraries are built
 # We would want a semi-packaging fashioned way where all bianries are together
@@ -100,6 +100,7 @@ message(STATUS "****************************************************************
 ################################################################################
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${REPOSITORYROOT}/UnpleasentnessBin/${PLATFORM_PREFIX}/${OLDUNREAL_CPU}/${CMAKE_BUILD_TYPE}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${REPOSITORYROOT}/UnpleasentnessBin/${PLATFORM_PREFIX}/${OLDUNREAL_CPU}/${CMAKE_BUILD_TYPE}")
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${REPOSITORYROOT}/UnpleasentnessBin/${PLATFORM_PREFIX}/${OLDUNREAL_CPU}/${CMAKE_BUILD_TYPE}")
 
 ################################################################################
@@ -192,8 +193,7 @@ add_subdirectory(Engine)
 ################################################################################
 # Link Directories
 ################################################################################
-#link_directories(IDK MiscLibs)
-link_directories(UEHook Core/Lib Engine/Lib Window/Lib)
+link_directories(Core/Lib Engine/Lib Window/Lib)
 
 ################################################################################
 # Native Labs
@@ -208,17 +208,13 @@ target_include_directories(IDK
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/Engine/Inc)
-	
-target_include_directories(UEHook
-    PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Engine/Inc)	
+		
 
 ################################################################################
 # Target Linking Rules
 ################################################################################
 target_link_libraries(IDK PUBLIC Core Engine Detours)
-target_link_libraries(UEHook PUBLIC Core Engine wx::core)
+target_link_libraries(UEHook PUBLIC wx::core)
 
 target_link_libraries(DetoursExampule PUBLIC Detours)
 

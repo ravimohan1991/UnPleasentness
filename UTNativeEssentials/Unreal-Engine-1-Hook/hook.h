@@ -41,11 +41,6 @@ class MyFrame;
 class MyApp : public wxApp
 {
 public:
-	MyApp()
-	{
-		OnInit();
-	}
-
 	bool OnInit() override;
 	MyFrame* GetMyFrame() const { return m_Frame; }
 
