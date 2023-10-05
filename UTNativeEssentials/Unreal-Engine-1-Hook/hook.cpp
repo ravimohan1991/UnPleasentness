@@ -1,6 +1,6 @@
-/************************************************************************
+/*******************************************************************************************
  *    Unreal Engine Pathogen
- *    Adapted from https://github.com/mschadev/detours-example/tree/master
+ *    Windows: Adapted from https://github.com/mschadev/detours-example/tree/master
  *
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -16,31 +16,38 @@
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- ************************************************************************/
+ ******************************************************************************************/
 
 #include "hook.h"
+#include <wx/filedlg.h>
+#include <wx/filesys.h>
+#include <wx/aui/framemanager.h>
+#include <wx/aui/auibook.h>
+#include <wx/collpane.h>
+#include <wx/spinctrl.h>
+#include <wx/filehistory.h>
 
 #include <TlHelp32.h>
 #include <tchar.h>
 
-MyFrame* MyApp::m_Frame = nullptr;
+KelvinFrame* UE1HookApp::m_Frame = nullptr;
 
-wxIMPLEMENT_APP_CONSOLE(MyApp);// call wxEntry() in this main()
+wxIMPLEMENT_APP_CONSOLE(UE1HookApp);
 
-bool MyApp::OnInit()
+bool UE1HookApp::OnInit()
 {
-	m_Frame = new MyFrame();
+	m_Frame = new KelvinFrame();
 	m_Frame->Show(true);
 
 	return true;
 }
 
-MyFrame::MyFrame()
-	: wxFrame(nullptr, wxID_ANY, "Hello World")
+KelvinFrame::KelvinFrame()
+	: wxFrame(nullptr, wxID_ANY, "UnPleasentness Injector")
 {
 	wxMenu* menuFile = new wxMenu;
-	menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
-		"Help string shown in status bar for this menu item");
+	menuFile->Append(ID_Hello, "&Load Antigen...\tCtrl-H",
+		"Select a DLL, SO, or DYLIB");
 	menuFile->AppendSeparator();
 	menuFile->Append(wxID_EXIT);
 
@@ -54,27 +61,61 @@ MyFrame::MyFrame()
 	SetMenuBar(menuBar);
 
 	CreateStatusBar();
-	SetStatusText("Welcome to wxWidgets!");
+	SetStatusText("Welcome to UE1Hook!");
 
-	Bind(wxEVT_MENU, &MyFrame::OnHello, this, ID_Hello);
-	Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
-	Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
+	// Setup relevant window for display
+	wxLogWindow* winLog = new wxLogWindow(this, wxT("Log"));
+
+	Bind(wxEVT_MENU, &KelvinFrame::OnOpenFile, this, ID_Hello);
+	Bind(wxEVT_MENU, &KelvinFrame::OnAbout, this, wxID_ABOUT);
+
+	Bind(wxEVT_MENU, &KelvinFrame::OnExit, this, wxID_EXIT);
 }
 
-void MyFrame::OnExit(wxCommandEvent& event)
+void KelvinFrame::OnExit(wxCommandEvent& event)
 {
 	Close(true);
 }
 
-void MyFrame::OnAbout(wxCommandEvent& event)
+void KelvinFrame::OnAbout(wxCommandEvent& event)
 {
-	wxMessageBox("This is a wxWidgets Hello World example",
-		"About Hello World", wxOK | wxICON_INFORMATION);
+	wxMessageBox("With regards from The_Cowboy",
+		"About UE1Hook", wxOK | wxICON_INFORMATION);
 }
 
-void MyFrame::OnHello(wxCommandEvent& event)
+void KelvinFrame::OnHello(wxCommandEvent& event)
 {
 	wxLogMessage("Hello world from wxWidgets!");
+}
+
+void KelvinFrame::OnOpenFile(wxCommandEvent& event)
+{
+	wxFileDialog dialog(this, "Please choose DLL",
+		wxEmptyString, wxEmptyString, "", wxFD_OPEN);
+
+	if (dialog.ShowModal() == wxID_OK)
+	{
+		wxString filename(dialog.GetPath());
+
+		wxFileSystem currentFileSystem;
+
+		wxFSFile* currentFile = currentFileSystem.OpenFile(filename);
+
+		if (filename.find(".dll") == 0)
+		{
+			wxLogMessage("Sorry, UE1Hook can't and won't work with unfamiliar \"antigens\".");
+			return;
+		}
+		else
+		{
+			OpenFile(filename, true);
+		}
+	}
+}
+
+void KelvinFrame::OpenFile(wxString filename, bool openAtRight)
+{
+	
 }
 
 BOOL SetPrivilege(LPCTSTR lpszPrivilege, BOOL bEnablePrivilege)
