@@ -175,6 +175,14 @@ endif()
 ################################################################################
 add_subdirectory(MiscLibs/Detours)
 
+# wxWidgets settings
+set(wxUSE_STL ON CACHE INTERNAL "")
+set(wxUSE_REGEX OFF CACHE INTERNAL "")
+set(wxUSE_LIBJPEG OFF CACHE INTERNAL "")
+set(wxUSE_LIBTIFF OFF CACHE INTERNAL "")
+set(wxUSE_ZLIB builtin CACHE INTERNAL "")
+add_subdirectory(MiscLibs/wxWidgets)
+
 ################################################################################
 # Epic Essentials
 ################################################################################
@@ -210,7 +218,7 @@ target_include_directories(UEHook
 # Target Linking Rules
 ################################################################################
 target_link_libraries(IDK PUBLIC Core Engine Detours)
-target_link_libraries(UEHook PUBLIC Core Engine)
+target_link_libraries(UEHook PUBLIC Core Engine wx::core)
 
 target_link_libraries(DetoursExampule PUBLIC Detours)
 

@@ -82,17 +82,19 @@ void cRadar::DrawBoundingBox(UCanvas* Canvas, APawn* Target)
 
 	F = Target->Location - MyCameraLocation;
 
-	appSprintf(StrTemp,L"%s",Target->PlayerReplicationInfo->PlayerName);
+	appSnprintf(StrTemp, 40, L"%s", Target->PlayerReplicationInfo->PlayerName);
 	DrawText(Canvas,StrTemp,Right + 3,Top,GetTeamColor(Target));
 
-	appSprintf(StrTemp,L"H:%d",Target->Health);
-	DrawText(Canvas,StrTemp,Right + 3,Top + 8,GetTeamColor(Target));
+	appSnprintf(StrTemp, 40, L"H:%d", Target->Health);
+	DrawText(Canvas, StrTemp, Right + 3, Top + 8, GetTeamColor(Target));
 
-    appSprintf(StrTemp, TEXT("D:%.0f"),F.Size() / 48);
+	appSnprintf(StrTemp, 40, TEXT("D:%.0f"), F.Size() / 48);
 	DrawText(Canvas,StrTemp,Right + 3,Top + 16,GetTeamColor(Target));
 
 	if (bHealthbars)
-	     DrawHealthBar(Canvas, top.X, Top + 10, Target->Health);
+	{
+		DrawHealthBar(Canvas, top.X, Top + 10, Target->Health);
+	}
 }
 
 void cRadar::DrawPlayerOnRadar (UCanvas* Canvas, APawn *Target)
