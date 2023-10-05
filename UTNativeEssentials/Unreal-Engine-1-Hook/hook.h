@@ -21,40 +21,16 @@
 #pragma once
 
 #include <wx/wx.h>
+#include <wx/config.h>
 
-#include "windows.h"
-#include "iostream"
-
-/*
- *  FUNCTION: log_add(const char *fmt, ...)
- *
- *  PURPOSE: log information to a file with timestamps.
- *
- *  COMMENTS:
- *
- */
-void log_add(const char* fmt, ...)
-{
-	va_list va_alist;
-	static char logbuf[1024];
-	if (fmt == NULL)
-	{
-		return;
-	}
-
-	//FILE* fp;
-	struct tm* current_tm;
-	time_t current_time;
-	time(&current_time);
-	current_tm = localtime(&current_time);
-
-	sprintf(logbuf, "%02d:%02d:%02d - ", current_tm->tm_hour, current_tm->tm_min, current_tm->tm_sec);
-	va_start(va_alist, fmt);
-	_vsnprintf(logbuf + strlen(logbuf), sizeof(logbuf) - strlen(logbuf), fmt, va_alist);
-	va_end(va_alist);
-
-	printf("%s\n", logbuf);
-}
+// Forward declarations
+class wxAuiManager;
+class InfoPanel;
+class wxCollapsiblePane;
+class wxSpinCtrl;
+class UDKHexEditor;
+class wxFileHistory;
+class wxFileName;
 
 class KelvinFrame;
 
@@ -94,9 +70,87 @@ public:
 	 * @see UDKHalo::OnOpenFile(wxCommandEvent& event)
 	 */
 	void OpenFile(wxString filename, bool openAtRight);
+
+private:
+	/**
+	 * @brief For managing varitey of panes or panels
+	 *
+	 * Chiefly used for adding, handling resizing, docking, and more \n
+	 * of utility panes (to be) present in UDKHalo.\n
+	 *
+	 * wxAuiManager works as follows: the programmer adds panes to the \n
+	 * class, or makes changes to existing pane properties (dock \n
+	 * position, floating state, show state, etc.). To apply these \n
+	 * changes, wxAuiManager's Update() function is called. This batch \n
+	 * processing can be used to avoid flicker, by modifying more than \n
+	 * one pane at a time, and then "committing" all of the changes at \n
+	 * once by calling Update().
+	 */
+	wxAuiManager* m_PaneManager;
+
+	/**
+	 * @brief Pane for file information
+	 *
+	 * All the useful information about the .u file package is \n
+	 *
+	 * @see InfoPanel
+	 */
+	InfoPanel* m_ProcessInfoPanel;
+
 };
 
 enum
 {
 	ID_Hello = 1
+};
+
+/// <summary>
+/// Super class of InfoPanel
+/// </summary>
+class InfoPanelGui : public wxPanel
+{
+private:
+
+protected:
+	wxStaticText* m_InfoPanelText;
+
+public:
+
+	InfoPanelGui(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(140, 111), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString);
+	~InfoPanelGui();
+
+};
+
+/// <summary>
+/// Class which displays relevant information of a file \n
+/// including name, path, size, and access
+/// </summary>
+class InfoPanel : public InfoPanelGui
+{
+public:
+	InfoPanel(wxWindow* parent, int id = -1, wxPoint pos = wxDefaultPosition, wxSize size = wxSize(-1, -1), int style = wxTAB_TRAVERSAL)
+		:InfoPanelGui(parent, id, pos, size, style) {}
+	void Set(wxFileName flnm, uint64_t lenght, wxString AccessMode, int FD, wxString XORKey);
+	void OnUpdate(wxCommandEvent& event) {}
+};
+
+///<summary>
+/// Wrapper for Portable vs Registry configbase.\n
+/// if there are wxHexEditor.cfg file exits on current path, wxHexEditor switches to portable version.
+/// </summary>
+class MyConfigBase
+{
+public:
+	static wxConfigBase* Get()
+	{
+		static wxFileConfig* AppConfigFile = new wxFileConfig("", "", "wxHexEditor.cfg", "", wxCONFIG_USE_RELATIVE_PATH);
+		if (wxFileExists("wxHexEditor.cfg"))
+		{
+			return AppConfigFile;
+		}
+		else
+		{
+			return wxConfigBase::Get();
+		}
+	}
 };
