@@ -26,6 +26,7 @@
 // Forward declarations
 class wxAuiManager;
 class InfoPanel;
+class InjectorLoop;
 class wxCollapsiblePane;
 class wxSpinCtrl;
 class UDKHexEditor;
@@ -38,11 +39,15 @@ class UE1HookApp : public wxApp
 {
 public:
 	bool OnInit() override;
-
 	KelvinFrame* GetMyFrame() const { return m_Frame; }
+	void OnIdle(wxIdleEvent& evt);
+
+	// https://wiki.wxwidgets.org/Making_a_render_loop
+	void ActivateInjectorLoop(bool on);
 
 private:
 	static KelvinFrame* m_Frame;
+	bool m_InjectorLoop;
 };
 
 class KelvinFrame : public wxFrame
@@ -62,6 +67,8 @@ private:
 	 * @see UDKHalo::UDKHalo()
 	 */
 	void OnOpenFile(wxCommandEvent& event);
+
+	void OnUpdateUI(wxUpdateUIEvent& event);
 
 public:
 	/**
@@ -97,6 +104,12 @@ private:
 	 */
 	InfoPanel* m_ProcessInfoPanel;
 
+	/**
+	 * @brief Loop for injection purposes
+	 *
+	 * @see
+	 */
+	static InjectorLoop m_InjectorLoop;
 };
 
 enum
@@ -134,7 +147,7 @@ public:
 	void OnUpdate(wxCommandEvent& event) {}
 };
 
-///<summary>
+/// <summary>
 /// Wrapper for Portable vs Registry configbase.\n
 /// if there are wxHexEditor.cfg file exits on current path, wxHexEditor switches to portable version.
 /// </summary>
