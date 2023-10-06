@@ -1,4 +1,4 @@
-/******************************************************************************************
+/*******************************************************************************************
  *    Unreal Engine Pathogen
  *    Windows: Adapted from https://github.com/mschadev/detours-example/tree/master
  *
@@ -16,7 +16,8 @@
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *************************************************************************************************************************/
+ *******************************************************************************************
+ */
 
 #pragma once
 
@@ -137,7 +138,17 @@ public:
 	 */
 	void OpenFile(wxString filename, bool openAtRight);
 
-	LogPanel* GetLogPanel() const { return m_LogPanel; }
+	/**
+	 * @brief Getter for Log panel
+	 */
+	std::shared_ptr<LogPanel> GetLogPanel() const { return m_LogPanel; }
+
+	/**
+	 * @brief Logs a message in the application logging area followed by new line;
+	 *
+	 * @param logMessage		The actual message to be logged
+	 */
+	void LogMessage(const wxString& logMessage);
 
 private:
 	/**
@@ -154,7 +165,7 @@ private:
 	 * one pane at a time, and then "committing" all of the changes at \n
 	 * once by calling Update().
 	 */
-	wxAuiManager* m_PaneManager;
+	std::shared_ptr<wxAuiManager> m_PaneManager;
 
 	/**
 	 * @brief Pane for process information
@@ -163,7 +174,7 @@ private:
 	 *
 	 * @see InfoPanel
 	 */
-	InfoPanel* m_ProcessInfoPanel;
+	std::shared_ptr<InfoPanel> m_ProcessInfoPanel;
 
 	/**
 	 * @brief Pane for logging operations
@@ -171,41 +182,17 @@ private:
 	 * Shows the logs of operations being performed for antigen injection
 	 * of the custom shared object code (in most of your language(s), DLL)
 	 */
-	LogPanel* m_LogPanel;
-
-	/**
-	 * @brief Loop for injection purposes
-	 *
-	 * @see
-	 */
-	static InjectorLoop m_InjectorLoop;
-};
-
-/// <summary>
-/// Super class of InfoPanel
-/// </summary>
-class UEHookPanel : public wxPanel
-{
-private:
-
-protected:
-	wxStaticText* m_InfoPanelText;
-
-public:
-
-	UEHookPanel(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(140, 111), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString);
-	~UEHookPanel();
-
+	std::shared_ptr<LogPanel> m_LogPanel;
 };
 
 /// <summary>
 /// Class for panel with information of the target process
 /// </summary>
-class InfoPanel : public UEHookPanel
+class InfoPanel : public wxPanel
 {
 public:
 	InfoPanel(wxWindow* parent, int id = -1, wxPoint pos = wxDefaultPosition, wxSize size = wxSize(-1, -1), int style = wxTAB_TRAVERSAL)
-		:UEHookPanel(parent, id, pos, size, style) {}
+		: wxPanel(parent, id, pos, size, style) {}
 
 	void Set(wxFileName flnm, uint64_t lenght, wxString AccessMode, int FD, wxString XORKey);
 	void OnUpdate(wxCommandEvent& event) {}
@@ -225,11 +212,10 @@ public:
 	wxTextCtrl* GetLogTextControl() const { return m_LogTextControl; }
 
 protected:
-
 	/**
-	 * @brief A text control for logging
+	 * @brief A wxWidget text control for logging
 	 *
-	 * For log text to be displayed (and maybe edited in future, for copy-paste?).
+	 * For read only log text to be displayed
 	 *
 	 * @see
 	 */

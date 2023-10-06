@@ -16,7 +16,8 @@
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- ******************************************************************************************/
+ *******************************************************************************************
+ */
 
 #include "hook.h"
 #include <wx/filedlg.h>
@@ -61,7 +62,7 @@ void UE1HookApp::OnIdle(wxIdleEvent& event)
 	if(m_InjectorLoop)
 	{
 		// ha looping when Idle. Must have a story.
-		// stress test m_Frame->GetLogPanel()->GetLogTextControl()->AppendText(wxString("Update UI\n"));
+		// m_Frame->LogMessage(wxString("Update UI"));
 		event.RequestMore(); // render continuously, not only once on idle
 	}
 }
@@ -89,11 +90,11 @@ KelvinFrame::KelvinFrame()
 
 	{
 		// Setup manager
-		m_PaneManager = new wxAuiManager(this);
+		m_PaneManager.reset(new wxAuiManager(this));
 		m_PaneManager->SetManagedWindow(this);
 
-		m_ProcessInfoPanel = new InfoPanel(this, 0);
-		m_PaneManager->AddPane(m_ProcessInfoPanel, wxAuiPaneInfo().
+		m_ProcessInfoPanel.reset(new InfoPanel(this, 0));
+		m_PaneManager->AddPane(m_ProcessInfoPanel.get(), wxAuiPaneInfo().
 				Name(_("ProcessInfo")).
 				Caption(_("Process Information")).
 				TopDockable(true).
@@ -104,8 +105,8 @@ KelvinFrame::KelvinFrame()
 				Resizable(false).
 				Center());
 
-		m_LogPanel = new LogPanel(this, 1);
-		m_PaneManager->AddPane(m_LogPanel, wxAuiPaneInfo().
+		m_LogPanel.reset(new LogPanel(this, 1));
+		m_PaneManager->AddPane(m_LogPanel.get(), wxAuiPaneInfo().
 				Name(_("OperationLog")).
 				Caption(_("Operation Log")).
 				TopDockable(false).
@@ -162,10 +163,9 @@ void KelvinFrame::OnOpenFile(wxCommandEvent& event)
 
 		wxFSFile* currentFile = currentFileSystem.OpenFile(filename);
 
-		if (filename.find(".dll") == 0)
+		if (filename.find(".dll") == wxString::npos && filename.find(".dylib") == wxString::npos)
 		{
-			wxLogMessage("Sorry, UE1Hook can't and won't work with unfamiliar \"antigens\".");
-			return;
+			LogMessage("Sorry, UE1Hook can't and won't work with unfamiliar \"antigens\".");
 		}
 		else
 		{
@@ -179,20 +179,18 @@ void KelvinFrame::OpenFile(wxString filename, bool openAtRight)
 	
 }
 
+void KelvinFrame::LogMessage(const wxString& logMessage)
+{
+	m_LogPanel->GetLogTextControl()->AppendText(logMessage);
+	m_LogPanel->GetLogTextControl()->AppendText(wxString("\n"));
+}
+
 /*
 void KelvinFrame::OnUpdateUI(wxEvent& event)
 {
 	m_LogPanel->GetLogTextControl()->AppendText(wxString("Update UI\n"));
 }*/
 
-
-UEHookPanel::UEHookPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name) : wxPanel(parent, id, pos, size, style, name)
-{
-}
-
-UEHookPanel::~UEHookPanel()
-{
-}
 
 void InfoPanel::Set(wxFileName flnm, uint64_t lenght, wxString AccessMode, int FD, wxString XORKey)
 {
@@ -211,7 +209,7 @@ LogPanel::LogPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wx
 	this->Layout();
 
 	m_LogTextControl->AppendText(wxString("hmm, And yes, if you do so before building the DLL and the application it helps. But this is only a workaround and hope you are able to provide a more professional solution.\n"));
-	m_LogTextControl->AppendText(wxString("next?"));
+	m_LogTextControl->AppendText(wxString("next?\n"));
 }
 
 /*
