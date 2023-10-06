@@ -1,4 +1,4 @@
-/*******************************************************************************************
+/******************************************************************************************
  *    Unreal Engine Pathogen
  *    Windows: Adapted from https://github.com/mschadev/detours-example/tree/master
  *
@@ -16,7 +16,7 @@
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- ******************************************************************************************/
+ *************************************************************************************************************************/
 
 #pragma once
 
@@ -33,33 +33,92 @@ class wxSpinCtrl;
 class UDKHexEditor;
 class wxFileHistory;
 class wxFileName;
-
 class KelvinFrame;
 
+/**
+ * @brief The app wxWidgets class for UE1Hook
+ */
 class UE1HookApp : public wxApp
 {
 public:
+	/**
+	 * @brief Initialize stuff
+	 *
+	 * Purpose is two-fold
+	 * 1. Create a frame (from KelvinFrame) for UI display
+	 * 2. Activate a loop for tracking platform processe(s)
+	 *
+	 * @return true after doing all work
+	 * @see UE1HookApp:: ActivateInjectorLoop
+	 */
 	bool OnInit() override;
+
+	/**
+	 * @brief Getter for sole KelvinFrame instance
+	 */
 	KelvinFrame* GetMyFrame() const { return m_Frame; }
+
+	/**
+	 * @brief For realtime-like (I am asuming) looping logic
+	 *
+	 * @see UE1HookApp:: ActivateInjectorLoop
+	 */
 	void OnIdle(wxIdleEvent& evt);
 
-	// https://wiki.wxwidgets.org/Making_a_render_loop
+	/**
+	 * @brief Routine to enable and disable realtime-like loop
+	 *
+	 * @remark Visit https://wiki.wxwidgets.org/Making_a_render_loop
+	 */
 	void ActivateInjectorLoop(bool on);
 
 private:
+
+	/**
+	 * Reference to the sole instance of KelvinFrame
+	 */
 	static KelvinFrame* m_Frame;
+
+	/**
+	 * Variable showing the status of real-time like loop
+	 */
 	bool m_InjectorLoop;
 };
 
+/**
+ * @brief wxFrame for UE1HookApp
+ */
 class KelvinFrame : public wxFrame
 {
 public:
+	/**
+	 * @brief Constructor for setting up menus, menubar, statusbar, and
+	 * variety of frames for UE1Hook application.
+	 */
 	KelvinFrame();
 
 private:
+	/**
+	 * @brief For legacy purpose from tutorial
+	 */
 	void OnHello(wxCommandEvent& event);
+
+	/**
+	 * @brief Exit entry callback
+	 *
+	 * Close the window after deactivating real-time like loop
+	 */
 	void OnExit(wxCommandEvent& event);
+
+	/**
+	 * @brief About entry callback
+	 *
+	 * Shows information aboout the hook application and my name :D
+	 *
+	 * @todo Think what information should be displayed
+	 */
 	void OnAbout(wxCommandEvent& event);
+
 	/**
 	 * @brief OpenFile entry callback
 	 *
@@ -69,15 +128,16 @@ private:
 	 */
 	void OnOpenFile(wxCommandEvent& event);
 
-	void OnUpdateUI(wxUpdateUIEvent& event);
-
 public:
 	/**
-	 * @brief Opens the specified file for analysis
+	 * @brief Actually do the injection procedure
 	 *
-	 * @see UDKHalo::OnOpenFile(wxCommandEvent& event)
+	 * @param filename		The absolute path of file
+	 * @todo write injection process for platforms
 	 */
 	void OpenFile(wxString filename, bool openAtRight);
+
+	LogPanel* GetLogPanel() const { return m_LogPanel; }
 
 private:
 	/**
@@ -161,6 +221,8 @@ public:
 
 	void Set(wxFileName flnm, uint64_t lenght, wxString AccessMode, int FD, wxString XORKey);
 	void OnUpdate(wxCommandEvent& event) {}
+
+	wxTextCtrl* GetLogTextControl() const { return m_LogTextControl; }
 
 protected:
 

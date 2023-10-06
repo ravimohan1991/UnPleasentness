@@ -61,6 +61,7 @@ void UE1HookApp::OnIdle(wxIdleEvent& event)
 	if(m_InjectorLoop)
 	{
 		// ha looping when Idle. Must have a story.
+		// stress test m_Frame->GetLogPanel()->GetLogTextControl()->AppendText(wxString("Update UI\n"));
 		event.RequestMore(); // render continuously, not only once on idle
 	}
 }
@@ -125,7 +126,7 @@ KelvinFrame::KelvinFrame()
 
 	Bind(wxEVT_MENU, &KelvinFrame::OnOpenFile, this, wxID_OPEN);
 	Bind(wxEVT_MENU, &KelvinFrame::OnAbout, this, wxID_ABOUT);
-
+	//Bind(wxEVT_SIZING, &KelvinFrame::OnUpdateUI, this, wxID_RESIZE_FRAME);
 	Bind(wxEVT_MENU, &KelvinFrame::OnExit, this, wxID_EXIT);
 }
 
@@ -178,10 +179,11 @@ void KelvinFrame::OpenFile(wxString filename, bool openAtRight)
 	
 }
 
-void KelvinFrame::OnUpdateUI(wxUpdateUIEvent& event)
+/*
+void KelvinFrame::OnUpdateUI(wxEvent& event)
 {
-	std::cout<< "update ui";
-}
+	m_LogPanel->GetLogTextControl()->AppendText(wxString("Update UI\n"));
+}*/
 
 
 UEHookPanel::UEHookPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name) : wxPanel(parent, id, pos, size, style, name)
