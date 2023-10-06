@@ -1,0 +1,214 @@
+Welcome to Grims Build-A-Bot :] hoo haa
+
+by Willem Bermon aka GrimReaper
+
+Special thanks to everyone i know at utcheats.com ;)
+
+Custom made for: davido ;-)
+----------------------------------------
+
+
+Ok welcome.
+
+Ok first a minor note:
+
+First this is not a SHIT HO politically correct 'Ouch i forgot a semicolon' Migrainsoft Whinedows manual 
+so be prepared for mistakes and shit. This is again a Grim-Hump-It-Down-In-Notepad-In-ten-Point-two-Minutes tutorial.
+
+This tutorial is specifically built to give you a platform to build a bot on.
+Helios Tutorial for a honeybot CAN be ported into this cheating platform davido
+my m8 from italy did it using my guidance and he has pretty little programming experience.
+
+SO THIS IS NOT A COMPLETE BOT!!!! WHY COS I AINT GOT T3H TIME AND THERES NOTHING LIKE YOUR OWN BOT ;).
+
+Anyone with more than a mushy-pee for a brain can do this shit. Porting a bot to it is slightly harder
+but anyone motivated to learn; this is your time and place cos it don't get better than this trust me.
+I worked hard to make these hacks and you get to use them :). I waited for ut2k4 progress to get far
+so they can't smart up off of info of this bot/hack.
+
+AND SINCE 2 PEEPS WERE TOO PISSED TO RTFM A .org IS AN ORIGINAL COPY OF YOUR OLD .u FILE!!!!!
+
+
+Let's Rock
+
+What we want is an online aimbot :) Lemme hear ya say YEAAHHHHH!!!!! ... YEAHHHH!!!
+
+We need to stick it somewhere .... hrmmmm Engine.u is a good place but
+we want more access to lower packages but we want raw power of Engine.u.
+
+So we do both. I use xWebAdmin and Engine.u.
+
+
+This tut is built up in 6 parts.
+
+- Explanation on how the shit comes together
+- Export the code
+- The bot basis
+- Compiling the bot basis
+- The bot itself
+- Compiling the bot
+- MD5 Ownage
+
+
+Explanation on how the shit comes together
+--------------------------------------------
+
+It is not nessecary to understand this but it helps if you want to be a botbuilder.
+
+The method i use to be able to access all entities ingame is called delegation
+in other words i make a base class my BWF_Base which works like a JAVA interface. I then
+use HUD class to pust a PostRender to it and i use Console.uc to launch it and push Tick requests
+to it and assign the ViewportOwner.
+
+Due to Engine.u limitations (crashes etc.) i had to reuse a variable to locate my bot in this is 
+the Focus variable which isn't used in online play.
+
+Then using dynamicloadobject i load up my bot which extends my BWF_Base and it will then due to my
+system will automagically get Tick, PostRender, Spawned, Destroyed calls when you override them.
+PreRender wasn't hooked last time i checked.
+
+NOTE: Because the variables like ViewportOwner are passed after spawn be aware of the fact that
+      they will be None at spawn. So DONT do shit like  PC = ViewportOwner.Actor; in Spawned().
+      Ok let me put it like this DONT USE SPAWNED!!!!.
+
+
+Export the code
+------------------
+
+-Open up unrealed
+-Click the pawn icon in the toolbar
+-Batch export all scripts
+
+This will generate all the .uc files. You can also download em from EPIC.
+
+
+
+The bot basis
+------------------
+
+The bot basis exists out of two parts.
+
+- The base class  (BWF_Base.uc)
+- The initiators   (Console.uc, HUD.uc)
+
+The base class is a class that can be overridden. This way we can dynamically 
+load a different package object. (our bot).
+
+The initiator is the class hooking all calls to our base class and since our 
+bot overrides the base class it too will get those calls.
+
+
+
+Compiling the base into Engine.u
+---------------------------------
+
+- Chuck the two files into the /Engine/Classes dir.
+
+// If recompiling skip this step
+- Copy Engine.u to Engine.org (Only once you need an untouched copy of Engine.u)
+
+- Delete Engine.u (check if the .org file exists)
+- Ucc make
+- ucc conform Engine.u Engine.org
+
+Boner!!! we're done already :)
+
+
+
+The bot itself
+----------------
+
+The bot itself is located in a lower package xWebAdmin is best imo.
+
+The bot must extend the BWF_Base and have the same name as specified in Console.uc.
+In this example file it was BWF_Aimbot.uc.
+
+We already have the xWebAdmin exported so it's another chuck 'n complile cycle.
+
+
+Ok chuck in your code into BWF_Aimbot.uc :]
+
+
+- Chuck the two files into the /xWebAdmin/Classes dir.
+
+- Send me an email which second file you chucked in cos it's only 1 hehehe gotcha :P
+
+// If recompiling skip this step
+- Copy xWebAdmin.u to xWebAdmin.org (Only once you need an untouched copy of Engine.u)
+
+- Delete xWebAdmin.u (check if the .org file exists)
+- Ucc make
+- ucc conform xWebAdmin.u xWebAdmin.org
+
+
+
+Ok if i typed this tut correctly you should have yourself a working propper aimbot ready
+for online ownage in ut2k3. BUT MD5 uhhh oohhhhh.
+
+
+
+MD5 Ownage
+----------------
+
+Ok i'll assume you have my proxy ;)
+
+minor note:
+
+RRRRR   TTTTTTTT  FFFFFFF   MMM  MMM     !!
+RR   R     TT     FF       MM  MM  MM    !!
+RRRRRR     TT     FFFFF    MM  MM   MM   !!
+RR  R      TT     FF      MM        MM
+RR   R     TT     FF      MM        MM   !!
+
+(yes it has a manual my proxy)
+
+Well you need to run the following commands in DOS prompt.
+
+1.  ucc mastermd5 -q Engine.u
+2.  ucc mastermd5 -f Engine.u
+3.  ucc mastermd5 -q xWebAdmin.u
+4.  ucc mastermd5 -f xWebAdmin.u
+
+As you can see you will get MD5 values (the 32 char long hex thingies)
+
+in BWF_SearchReplaceList.ini set the following (sections exist)
+
+; Engine.u
+; QuickMD5
+SearchString[6]=<MD5 value of command 1 goes here>
+ReplaceString[6]=7c07dc2b72044ef0e6278707e9e8b0f6
+; FullMD5
+SearchString[7]=<MD5 value of command 2 goes here>
+ReplaceString[7]=c58cb829f4af69ac167b80f3d39751e0
+
+
+; xWebAdmin.u
+; QuickMD5
+SearchString[52]=<MD5 value of command 3 goes here>
+ReplaceString[52]=643cfed13fffadc86433b14159c936da
+; FullMD5
+SearchString[53]=<MD5 value of command 4 goes here>
+ReplaceString[53]=f6d6acbf46b208f064c2cc41246798dd
+
+
+As you've noticed xInterface has already been set for the one supplied by the proxy.
+
+Other than that the modified ini goes in the system dir.
+
+Read the proxy readme if questions.
+
+Make sure the proxy is running.
+
+
+
+
+Don't quit keep trying someday it'll work.
+
+
+
+For free support or free custom aimbots or personal assistance or 1-to-1 personalized
+weeks course in botbuilding email me at SomEb0dYWh0G1v3z4phuK@ImAduMbFuck.Com
+
+
+----------------------------------------------------------------
+This was a quick and ugly GrimReaper Tutorial. :] hoo haa!!!!
