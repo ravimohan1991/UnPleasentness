@@ -45,6 +45,17 @@ void HookOmega();
 void HookingLoop(const char*, const char*);
 
 /**
+ * @brief Enum for UE1Hook status
+ */
+enum HookStatus
+{
+	NotReady = 0,			///< Some obstruction encountered, so not ready
+	Ready,					///< Ready for hooking a process
+	Looping,				///< Looping in search of process, usually after loading shared object code file (DLL)
+	Hooked					///< Hooked the custom native code into the process
+};
+
+/**
  * @brief The app wxWidgets class for UE1Hook
  */
 class UE1HookApp : public wxApp
@@ -81,6 +92,16 @@ public:
 	 */
 	void ActivateInjectorLoop(bool on);
 
+	/**
+	 * @brief For querying the status of the hook
+	 */
+	HookStatus GetStatus() const { return m_HookStatus; }
+
+	/**
+	 * @brief For setting the hook status
+	 */
+	void SetStatus(HookStatus status) { m_HookStatus = status; }
+
 	inline void SetFileName(const wxString fileName) { m_FileName = fileName; }
 	inline void SetProcessName(const wxString processName) { m_ProcessName = processName; }
 
@@ -108,6 +129,11 @@ private:
 	 * @brief The full path of the DLL, SO, or DYLIB with injection code
 	 */
 	wxString m_FileName;
+
+	/**
+	 * @brief The current status of the UE1Hook application
+	 */
+	HookStatus m_HookStatus;
 };
 
 /**

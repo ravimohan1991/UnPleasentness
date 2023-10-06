@@ -29,6 +29,14 @@
 #include <wx/filehistory.h>
 #include <wx/apptrait.h>
 
+// Global Define for this translation unit
+
+#ifdef HOOK_MAC_PLATFORM
+const char* AntigenFile = "dylib";
+#elif HOOK_WINDOWS_PLATFORM
+const* char AntigenFile = "dll";
+#endif
+
 KelvinFrame* UE1HookApp::m_Frame = nullptr;
 
 wxIMPLEMENT_APP_CONSOLE(UE1HookApp);
@@ -47,12 +55,14 @@ bool UE1HookApp::OnInit()
 	m_InjectorLoop = false;
 	
 	m_FileName = m_ProcessName = wxString("");
+	m_HookStatus = HookStatus::NotReady;
 
 	bool bShouldLoop = HookAlpha();
 
 	if (bShouldLoop)
 	{
 		AddLogText("UE1Hook is ready for, well, Hooking! Hook'em all!!");
+		m_HookStatus = HookStatus::Ready;
 	}
 	else
 	{
@@ -81,8 +91,6 @@ void UE1HookApp::OnIdle(wxIdleEvent& event)
 	if(m_InjectorLoop)
 	{
 		// ha looping when Idle. Must have a story.
-		// m_Frame->LogMessage(wxString("Update UI"));
-
 		if (m_ProcessName != "" && m_FileName != "")
 		{
 			HookingLoop(m_ProcessName.c_str(), m_FileName.c_str());
@@ -177,8 +185,9 @@ void KelvinFrame::OnHello(wxCommandEvent& event)
 
 void KelvinFrame::OnOpenFile(wxCommandEvent& event)
 {
-	wxFileDialog dialog(this, "Please choose DLL",
-		wxEmptyString, wxEmptyString, "", wxFD_OPEN);
+	static wxString title = wxString("Please choose") + wxString(AntigenFile);
+
+	wxFileDialog dialog(this, title, wxEmptyString, wxEmptyString, "", wxFD_OPEN);
 
 	if (dialog.ShowModal() == wxID_OK)
 	{
@@ -188,15 +197,41 @@ void KelvinFrame::OnOpenFile(wxCommandEvent& event)
 
 		wxFSFile* currentFile = currentFileSystem.OpenFile(filename);
 
-		if (filename.find(".dll") == wxString::npos && filename.find(".dylib") == wxString::npos)
+		if (wxGetApp().GetStatus() == HookStatus::Ready && filename.find(AntigenFile) == wxString::npos)
 		{
 			LogMessage("Sorry, UE1Hook can't and won't work with unfamiliar \"antigens\".");
+
+			static wxString correctionMessage = wxString("Please look for .") + wxString(AntigenFile);
+
+			LogMessage(correctionMessage);
+
 			wxGetApp().ActivateInjectorLoop(false);
 		}
 		else
 		{
-			OpenFile(filename, true);
-			wxGetApp().ActivateInjectorLoop(true);
+			switch (wxGetApp().GetStatus())
+			{
+				case HookStatus::Ready:
+					OpenFile(filename, true);
+					wxGetApp().ActivateInjectorLoop(true);
+					break;
+
+				case HookStatus::NotReady:
+					AddLogText(wxString("UE1Hook not ready for injection"));
+					break;
+
+				case HookStatus::Hooked:
+					AddLogText(wxString("UE1Hook already hooked a file (containing antigen)"));
+					break;
+
+				case HookStatus::Looping:
+					AddLogText(wxString("In middle of hooking a file (containing antigen)"));
+					break;
+
+				default:
+					break;
+			}
+
 		}
 	}
 }
@@ -243,6 +278,25 @@ LogPanel::LogPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wx
 	this->SetSizer(mainSizer);
 	this->Layout();
 }
+
+/////////////////////////////////////// Mac Hooking ///////////////////////////////////////
+#ifdef HOOK_MAC_PLATFORM
+
+bool HookAlpha()
+{
+	// no hooking for now
+	return false;
+}
+
+void HookOmega()
+{}
+
+void HookingLoop(const char* processName, const char* dllPath)
+{
+	// nothing to do
+}
+
+#endif // HOOK_MAC_PLATFORM
 
 /////////////////////////////////////// Windows Hooking ///////////////////////////////////////
 
@@ -473,6 +527,8 @@ void HookOmega()
 
 void HookingLoop(const char* processName, const char* dllPath)
 {
+	wxGetApp().SetStatus(HookStatus::Looping);
+
 	if (Process32Next(snapshot, &entry) == TRUE)
 	{
 		if (wcscmp(entry.szExeFile, GetWC(processName)) == 0)
@@ -480,6 +536,7 @@ void HookingLoop(const char* processName, const char* dllPath)
 			log_add("Process found, injecting custom code");
 			InjectDll(entry.th32ProcessID, GetWC(dllPath));
 			wxGetApp().ActivateInjectorLoop(false);
+			wxGetApp().SetStatus(HookStatus::Hooked);
 			dllFullPath = dllPath;// cache for later use
 		}
 	}
