@@ -440,6 +440,8 @@ BOOL EjectDll(DWORD dwPID, LPCTSTR szDllPath)
 PROCESSENTRY32 entry;
 HANDLE snapshot;
 
+const char* dllFullPath;
+
 bool HookAlpha()
 {
 	if (SetPrivilege(SE_DEBUG_NAME, TRUE) == false)
@@ -463,6 +465,9 @@ bool HookAlpha()
 
 void HookOmega()
 {
+	log_add("Unhooking, goodbye");
+
+	EjectDll(entry.th32ProcessID, GetWC(dllFullPath));
 	CloseHandle(snapshot);
 }
 
@@ -474,13 +479,8 @@ void HookingLoop(const char* processName, const char* dllPath)
 		{
 			log_add("Process found, injecting custom code");
 			InjectDll(entry.th32ProcessID, GetWC(dllPath));
-
 			wxGetApp().ActivateInjectorLoop(false);
-			//log_add("Press Enter to unhook and exit");
-			//std::cin.get();
-			
-			//EjectDll(entry.th32ProcessID, GetWC(dllPath));
-			
+			dllFullPath = dllPath;// cache for later use
 		}
 	}
 }
