@@ -29,7 +29,6 @@ set(REPOSITORYROOT "${CMAKE_CURRENT_SOURCE_DIR}/../")
 # UT GOTY directory
 set(UTGOTYROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 
-
 ################################################################################
 # Figure out build type and target platform
 ################################################################################
@@ -114,18 +113,20 @@ add_compile_definitions(_UNICODE=1)
 if(WINDOWS)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS=1)
   add_compile_definitions(_CRT_NO_VA_START_VALIDATION)
-
   add_compile_definitions(WIN32=1)
+  add_compile_definitions(HOOK_WINDOWS_PLATFORM)
 endif()
 
 if(LINUX)
   add_compile_definitions(__LINUX_ARM__)
+  add_compile_definitions(HOOK_LINUX_PLATFORM)
 endif()
 
 if(MACOS)
   add_compile_definitions(HAVE_PRAGMA_PACK)
   add_compile_definitions(MACOSX)
   add_compile_definitions(__APPLE_ARM64__)
+  add_compile_definitions(HOOK_MAC_PLATFORM)
   set(CMAKE_OSX_ARCHITECTURES "${ARCHS_STANDARD}")
 endif()
 

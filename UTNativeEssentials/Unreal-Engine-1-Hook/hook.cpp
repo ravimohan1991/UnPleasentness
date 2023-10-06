@@ -33,13 +33,32 @@ KelvinFrame* UE1HookApp::m_Frame = nullptr;
 
 wxIMPLEMENT_APP_CONSOLE(UE1HookApp);
 
+// Global application logging function
+void AddLogText(const wxString log)
+{
+	wxGetApp().GetMyFrame()->LogMessage(log);
+}
+
 bool UE1HookApp::OnInit()
 {
 	m_Frame = new KelvinFrame();
 	m_Frame->Show(true);
 
 	m_InjectorLoop = false;
-	ActivateInjectorLoop(true);
+	
+	m_FileName = m_ProcessName = wxString("");
+
+	bool bShouldLoop = HookAlpha();
+
+	if (bShouldLoop)
+	{
+		AddLogText("UE1Hook is ready for, well, Hooking! Hook'em all!!");
+	}
+	else
+	{
+		AddLogText("Encountered an injection obstruction");
+	}
+
 	return true;
 }
 
@@ -63,6 +82,11 @@ void UE1HookApp::OnIdle(wxIdleEvent& event)
 	{
 		// ha looping when Idle. Must have a story.
 		// m_Frame->LogMessage(wxString("Update UI"));
+
+		if (m_ProcessName != "" && m_FileName != "")
+		{
+			HookingLoop(m_ProcessName.c_str(), m_FileName.c_str());
+		}
 		event.RequestMore(); // render continuously, not only once on idle
 	}
 }
@@ -136,6 +160,7 @@ void KelvinFrame::OnExit(wxCommandEvent& event)
 	wxGetApp().ActivateInjectorLoop(false);
 	event.Skip(); // don't stop event, we still want window to close
 
+	HookOmega();
 	Close(true);
 }
 
@@ -166,17 +191,27 @@ void KelvinFrame::OnOpenFile(wxCommandEvent& event)
 		if (filename.find(".dll") == wxString::npos && filename.find(".dylib") == wxString::npos)
 		{
 			LogMessage("Sorry, UE1Hook can't and won't work with unfamiliar \"antigens\".");
+			wxGetApp().ActivateInjectorLoop(false);
 		}
 		else
 		{
 			OpenFile(filename, true);
+			wxGetApp().ActivateInjectorLoop(true);
 		}
 	}
 }
 
 void KelvinFrame::OpenFile(wxString filename, bool openAtRight)
 {
-	
+	wxGetApp().SetFileName(filename);
+
+	wxString tempoString(filename);
+	LogMessage(wxString("Antigen code file ") + tempoString + wxString(" loaded"));
+
+	wxString anotherTempoString("UnrealTournament.exe");
+
+	wxGetApp().SetProcessName(anotherTempoString);
+	LogMessage("Targetting the process " + anotherTempoString);
 }
 
 void KelvinFrame::LogMessage(const wxString& logMessage)
@@ -207,12 +242,54 @@ LogPanel::LogPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wx
 
 	this->SetSizer(mainSizer);
 	this->Layout();
+}
 
-	m_LogTextControl->AppendText(wxString("hmm, And yes, if you do so before building the DLL and the application it helps. But this is only a workaround and hope you are able to provide a more professional solution.\n"));
-	m_LogTextControl->AppendText(wxString("next?\n"));
+/////////////////////////////////////// Windows Hooking ///////////////////////////////////////
+
+#ifdef HOOK_WINDOWS_PLATFORM
+
+#include <TlHelp32.h>
+#include <tchar.h>
+
+// Courtsey: https://stackoverflow.com/a/8032108
+const wchar_t* GetWC(const char* c)
+{
+	const size_t cSize = strlen(c) + 1;
+	wchar_t* wc = new wchar_t[cSize];
+	mbstowcs(wc, c, cSize);
+
+	return wc;
 }
 
 /*
+ *  FUNCTION: log_add(const char *fmt, ...)
+ *
+ *  PURPOSE: log information to a visible medium, with timestamps.
+ *
+ *  COMMENTS: we are feeding the buffer to UE1Hook's logging system
+ */
+void log_add(const char* fmt, ...)
+{
+	va_list va_alist;
+	static char logbuf[1024];
+	if (fmt == NULL)
+	{
+		return;
+	}
+
+	//FILE* fp;
+	struct tm* current_tm;
+	time_t current_time;
+	time(&current_time);
+	current_tm = localtime(&current_time);
+
+	sprintf(logbuf, "%02d:%02d:%02d - ", current_tm->tm_hour, current_tm->tm_min, current_tm->tm_sec);
+	va_start(va_alist, fmt);
+	_vsnprintf(logbuf + strlen(logbuf), sizeof(logbuf) - strlen(logbuf), fmt, va_alist);
+	va_end(va_alist);
+
+	AddLogText(wxString(logbuf));
+}
 
 BOOL SetPrivilege(LPCTSTR lpszPrivilege, BOOL bEnablePrivilege)
 {
@@ -224,7 +301,7 @@ BOOL SetPrivilege(LPCTSTR lpszPrivilege, BOOL bEnablePrivilege)
 	  TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
 	  &hToken))
 	{
-		printf("OpenProcessToken error: %u\n", GetLastError());
+		log_add("OpenProcessToken error: %u\n", GetLastError());
 		return FALSE;
 	}
 
@@ -232,7 +309,7 @@ BOOL SetPrivilege(LPCTSTR lpszPrivilege, BOOL bEnablePrivilege)
 	  lpszPrivilege,   // privilege to lookup
 	  &luid))         // receives LUID of privilege
 	{
-		printf("LookupPrivilegeValue error: %u\n", GetLastError());
+		log_add("LookupPrivilegeValue error: %u\n", GetLastError());
 		return FALSE;
 	}
 
@@ -256,13 +333,14 @@ BOOL SetPrivilege(LPCTSTR lpszPrivilege, BOOL bEnablePrivilege)
 	  (PTOKEN_PRIVILEGES)NULL,    //
 	  (PDWORD)NULL))
 	{
-		printf("AdjustTokenPrivileges error: %u\n", GetLastError());
+		log_add("AdjustTokenPrivileges error: %u\n", GetLastError());
 		return FALSE;
 	}
 
 	if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
 	{
-		printf("The token does not have the specified privilege. \n");
+		log_add("The token does not have the specified privilege.");
+		log_add("Try running the application with administrator rights.");
 		return FALSE;
 	}
 
@@ -283,14 +361,16 @@ BOOL InjectDll(DWORD dwPID, LPCTSTR szDllPath)
 		return FALSE;
 	}
 
+	log_add("Applying hooking procedure on process %x with PID %i", hProcess, dwPID);
 
 	pRemoteBuf = VirtualAllocEx(hProcess, NULL, dwBufSize,
 	  MEM_COMMIT, PAGE_READWRITE);
 
-
+	log_add("Writing to process memory");
 	WriteProcessMemory(hProcess, pRemoteBuf,
 	  (LPVOID)szDllPath, dwBufSize, NULL);
 
+	log_add("Attempting to creat new thread");
 	pThreadProc = (LPTHREAD_START_ROUTINE)
 	  GetProcAddress(GetModuleHandle(L"kernel32.dll"),
 	    "LoadLibraryW");
@@ -306,7 +386,6 @@ BOOL InjectDll(DWORD dwPID, LPCTSTR szDllPath)
 
 	return TRUE;
 }
-
 
 BOOL EjectDll(DWORD dwPID, LPCTSTR szDllPath)
 {
@@ -356,35 +435,53 @@ BOOL EjectDll(DWORD dwPID, LPCTSTR szDllPath)
 	CloseHandle(hSnapshot);
 
 	return TRUE;
-}*/
+}
 
-/*
-int main()
+PROCESSENTRY32 entry;
+HANDLE snapshot;
+
+bool HookAlpha()
 {
-	SetPrivilege(SE_DEBUG_NAME, TRUE);
-	PROCESSENTRY32 entry;
+	if (SetPrivilege(SE_DEBUG_NAME, TRUE) == false)
+	{
+		return false;
+	}
 
 	entry.dwSize = sizeof(PROCESSENTRY32);
 
-	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+	snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
 
 	if (Process32First(snapshot, &entry) == TRUE)
 	{
-		while (Process32Next(snapshot, &entry) == TRUE)
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void HookOmega()
+{
+	CloseHandle(snapshot);
+}
+
+void HookingLoop(const char* processName, const char* dllPath)
+{
+	if (Process32Next(snapshot, &entry) == TRUE)
+	{
+		if (wcscmp(entry.szExeFile, GetWC(processName)) == 0)
 		{
-			if (wcscmp(entry.szExeFile, L"UnrealTournament.exe") == 0)
-			{
-				log_add("Process found, injecting custom code");
-				InjectDll(entry.th32ProcessID, L"IDK.dll");
-				log_add("Press Enter to unhook and exit");
-				std::cin.get();
-				EjectDll(entry.th32ProcessID, L"IDK.dll");
-				break;
-			}
+			log_add("Process found, injecting custom code");
+			InjectDll(entry.th32ProcessID, GetWC(dllPath));
+
+			wxGetApp().ActivateInjectorLoop(false);
+			//log_add("Press Enter to unhook and exit");
+			//std::cin.get();
+			
+			//EjectDll(entry.th32ProcessID, GetWC(dllPath));
+			
 		}
 	}
-
-	CloseHandle(snapshot);
-
-	return 0;
-}*/
+}
+#endif // HOOK_WINDOWS_PLATFORM

@@ -25,6 +25,8 @@
 #include <wx/fileconf.h>
 
 // Forward declarations
+
+// Classes
 class wxAuiManager;
 class InfoPanel;
 class LogPanel;
@@ -35,6 +37,12 @@ class UDKHexEditor;
 class wxFileHistory;
 class wxFileName;
 class KelvinFrame;
+
+// Global functions
+bool HookAlpha();
+void HookOmega();
+
+void HookingLoop(const char*, const char*);
 
 /**
  * @brief The app wxWidgets class for UE1Hook
@@ -73,6 +81,12 @@ public:
 	 */
 	void ActivateInjectorLoop(bool on);
 
+	inline void SetFileName(const wxString fileName) { m_FileName = fileName; }
+	inline void SetProcessName(const wxString processName) { m_ProcessName = processName; }
+
+	inline const wxString& GetFileName() const { return m_FileName; }
+	inline const wxString& GetProcessName() const { return m_ProcessName; }
+
 private:
 
 	/**
@@ -84,6 +98,16 @@ private:
 	 * Variable showing the status of real-time like loop
 	 */
 	bool m_InjectorLoop;
+
+	/**
+	 * @brief The name of the process to be hooked
+	 */
+	wxString m_ProcessName;
+
+	/**
+	 * @brief The full path of the DLL, SO, or DYLIB with injection code
+	 */
+	wxString m_FileName;
 };
 
 /**
@@ -134,7 +158,9 @@ public:
 	 * @brief Actually do the injection procedure
 	 *
 	 * @param filename		The absolute path of file
+	 * 
 	 * @todo write injection process for platforms
+	 * @todo make UI arrangements for selecting relevant process
 	 */
 	void OpenFile(wxString filename, bool openAtRight);
 
