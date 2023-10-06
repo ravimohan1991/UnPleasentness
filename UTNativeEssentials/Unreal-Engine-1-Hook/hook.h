@@ -26,6 +26,7 @@
 // Forward declarations
 class wxAuiManager;
 class InfoPanel;
+class LogPanel;
 class InjectorLoop;
 class wxCollapsiblePane;
 class wxSpinCtrl;
@@ -96,13 +97,21 @@ private:
 	wxAuiManager* m_PaneManager;
 
 	/**
-	 * @brief Pane for file information
+	 * @brief Pane for process information
 	 *
-	 * All the useful information about the .u file package is \n
+	 * All the useful information about target process
 	 *
 	 * @see InfoPanel
 	 */
 	InfoPanel* m_ProcessInfoPanel;
+
+	/**
+	 * @brief Pane for logging operations
+	 *
+	 * Shows the logs of operations being performed for antigen injection
+	 * of the custom shared object code (in most of your language(s), DLL)
+	 */
+	LogPanel* m_LogPanel;
 
 	/**
 	 * @brief Loop for injection purposes
@@ -112,15 +121,10 @@ private:
 	static InjectorLoop m_InjectorLoop;
 };
 
-enum
-{
-	ID_Hello = 1
-};
-
 /// <summary>
 /// Super class of InfoPanel
 /// </summary>
-class InfoPanelGui : public wxPanel
+class UEHookPanel : public wxPanel
 {
 private:
 
@@ -129,22 +133,45 @@ protected:
 
 public:
 
-	InfoPanelGui(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(140, 111), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString);
-	~InfoPanelGui();
+	UEHookPanel(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(140, 111), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString);
+	~UEHookPanel();
 
 };
 
 /// <summary>
-/// Class which displays relevant information of a file \n
-/// including name, path, size, and access
+/// Class for panel with information of the target process
 /// </summary>
-class InfoPanel : public InfoPanelGui
+class InfoPanel : public UEHookPanel
 {
 public:
 	InfoPanel(wxWindow* parent, int id = -1, wxPoint pos = wxDefaultPosition, wxSize size = wxSize(-1, -1), int style = wxTAB_TRAVERSAL)
-		:InfoPanelGui(parent, id, pos, size, style) {}
+		:UEHookPanel(parent, id, pos, size, style) {}
+
 	void Set(wxFileName flnm, uint64_t lenght, wxString AccessMode, int FD, wxString XORKey);
 	void OnUpdate(wxCommandEvent& event) {}
+};
+
+/// <summary>
+/// Class for panel with logging
+/// </summary>
+class LogPanel : public wxPanel
+{
+public:
+	LogPanel(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(273, 310), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString);
+
+	void Set(wxFileName flnm, uint64_t lenght, wxString AccessMode, int FD, wxString XORKey);
+	void OnUpdate(wxCommandEvent& event) {}
+
+protected:
+
+	/**
+	 * @brief A text control for logging
+	 *
+	 * For log text to be displayed (and maybe edited in future, for copy-paste?).
+	 *
+	 * @see
+	 */
+	wxTextCtrl* m_LogTextControl;
 };
 
 /// <summary>

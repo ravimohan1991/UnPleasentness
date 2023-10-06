@@ -69,10 +69,10 @@ KelvinFrame::KelvinFrame()
 	: wxFrame(nullptr, wxID_ANY, "UnPleasentness Injector")
 {
 	wxMenu* menuFile = new wxMenu;
-	menuFile->Append(ID_Hello, "&Load Antigen...\tCtrl-H",
+	menuFile->Append(wxID_OPEN, "&Load Antigen...\tCtrl-H",
 		"Select a DLL, SO, or DYLIB");
 	menuFile->AppendSeparator();
-	menuFile->Append(wxID_EXIT);
+	menuFile->Append(wxID_EXIT, "Quit UE1Hook", "Quit Hooking");
 
 	wxMenu* menuHelp = new wxMenu;
 	menuHelp->Append(wxID_ABOUT);
@@ -91,7 +91,7 @@ KelvinFrame::KelvinFrame()
 		m_PaneManager = new wxAuiManager(this);
 		m_PaneManager->SetManagedWindow(this);
 
-		m_ProcessInfoPanel = new InfoPanel(this, -1);
+		m_ProcessInfoPanel = new InfoPanel(this, 0);
 		m_PaneManager->AddPane(m_ProcessInfoPanel, wxAuiPaneInfo().
 				Name(_("ProcessInfo")).
 				Caption(_("Process Information")).
@@ -101,7 +101,19 @@ KelvinFrame::KelvinFrame()
 				BestSize(wxSize(180, 25)).
 				Show(true).
 				Resizable(false).
-				Center().Layer(1));
+				Center());
+
+		m_LogPanel = new LogPanel(this, 1);
+		m_PaneManager->AddPane(m_LogPanel, wxAuiPaneInfo().
+				Name(_("OperationLog")).
+				Caption(_("Operation Log")).
+				TopDockable(false).
+				CloseButton(false).
+				BottomDockable(true).
+				BestSize(wxSize(180, 125)).
+				Show(true).
+				Resizable(false).
+				Center());
 
 		wxString tempStr;
 		MyConfigBase::Get()->Read(_T("LastPerspective"), &tempStr, wxEmptyString);
@@ -111,7 +123,7 @@ KelvinFrame::KelvinFrame()
 
 	//wxEventLoopBase *injectorLoop = wxAppTraits::CreateEventLoop();
 
-	Bind(wxEVT_MENU, &KelvinFrame::OnOpenFile, this, ID_Hello);
+	Bind(wxEVT_MENU, &KelvinFrame::OnOpenFile, this, wxID_OPEN);
 	Bind(wxEVT_MENU, &KelvinFrame::OnAbout, this, wxID_ABOUT);
 
 	Bind(wxEVT_MENU, &KelvinFrame::OnExit, this, wxID_EXIT);
@@ -172,27 +184,32 @@ void KelvinFrame::OnUpdateUI(wxUpdateUIEvent& event)
 }
 
 
-InfoPanelGui::InfoPanelGui(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name) : wxPanel(parent, id, pos, size, style, name)
+UEHookPanel::UEHookPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name) : wxPanel(parent, id, pos, size, style, name)
 {
-	wxBoxSizer* mainSizer;
-	mainSizer = new wxBoxSizer(wxVERTICAL);
-
-	m_InfoPanelText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-	m_InfoPanelText->Wrap(-1);
-	mainSizer->Add(m_InfoPanelText, 0, wxALL, 2);
-
-
-	this->SetSizer(mainSizer);
-	this->Layout();
 }
 
-InfoPanelGui::~InfoPanelGui()
+UEHookPanel::~UEHookPanel()
 {
 }
 
 void InfoPanel::Set(wxFileName flnm, uint64_t lenght, wxString AccessMode, int FD, wxString XORKey)
 {
 
+}
+
+LogPanel::LogPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name) : wxPanel(parent, id, pos, size, style)
+{
+	wxBoxSizer* mainSizer;
+	mainSizer = new wxBoxSizer(wxVERTICAL);
+
+	m_LogTextControl = new wxTextCtrl(this, id, wxEmptyString, wxDefaultPosition, parent->GetSize(), wxTE_DONTWRAP | wxTE_MULTILINE | wxTE_READONLY);
+	mainSizer->Add(m_LogTextControl, 1, wxALL, 2);
+
+	this->SetSizer(mainSizer);
+	this->Layout();
+
+	m_LogTextControl->AppendText(wxString("hmm, And yes, if you do so before building the DLL and the application it helps. But this is only a workaround and hope you are able to provide a more professional solution.\n"));
+	m_LogTextControl->AppendText(wxString("next?"));
 }
 
 /*
