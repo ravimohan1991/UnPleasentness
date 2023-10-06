@@ -98,7 +98,7 @@ KelvinFrame::KelvinFrame()
 				TopDockable(true).
 				CloseButton(false).
 				BottomDockable(false).
-				BestSize(wxSize(180, 25)).
+				BestSize(wxSize(180, 35)).
 				Show(true).
 				Resizable(false).
 				Center());
@@ -110,7 +110,7 @@ KelvinFrame::KelvinFrame()
 				TopDockable(false).
 				CloseButton(false).
 				BottomDockable(true).
-				BestSize(wxSize(180, 125)).
+				BestSize(wxSize(180, 1225)).
 				Show(true).
 				Resizable(false).
 				Center());
@@ -202,7 +202,7 @@ LogPanel::LogPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wx
 	wxBoxSizer* mainSizer;
 	mainSizer = new wxBoxSizer(wxVERTICAL);
 
-	m_LogTextControl = new wxTextCtrl(this, id, wxEmptyString, wxDefaultPosition, parent->GetSize(), wxTE_DONTWRAP | wxTE_MULTILINE | wxTE_READONLY);
+	m_LogTextControl = new wxTextCtrl(this, id, wxEmptyString, wxDefaultPosition, wxSize(11024, 11024), wxTE_DONTWRAP | wxTE_MULTILINE | wxTE_READONLY);
 	mainSizer->Add(m_LogTextControl, 1, wxALL, 2);
 
 	this->SetSizer(mainSizer);
