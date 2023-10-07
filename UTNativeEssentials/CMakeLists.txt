@@ -222,7 +222,7 @@ target_include_directories(Morbid
 # Target Linking Rules
 ################################################################################
 target_link_libraries(IDK PUBLIC Core Engine Detours)
-target_link_libraries(Morbid PUBLIC Core Engine Detours)
+target_link_libraries(Morbid PUBLIC Core Engine)
 target_link_libraries(UEHook PUBLIC wx::core wx::aui)
 target_link_libraries(DetoursExampule PUBLIC Detours)
 

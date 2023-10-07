@@ -28,5 +28,5 @@ target_include_directories(Morbid
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_compile_definitions(IDK PUBLIC IDK)
+target_compile_definitions(Morbid PUBLIC Morbid)
 
