@@ -45,6 +45,7 @@ endif()
 if(APPLE)
   set(MACOS TRUE)
   set(PLATFORM_PREFIX "MacOS")
+  set(WINDOWS FALSE)
 endif()
 
 # See what CPU we appear to be targeting...
@@ -106,9 +107,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${REPOSITORYROOT}/UnpleasentnessBin/${PLATFO
 # Set compiler and linker flags
 ################################################################################
 
-add_compile_definitions(UNICODE=1)
-add_compile_definitions(_UNICODE=1)
-
+#add_compile_definitions(UNICODE=1)
+#add_compile_definitions(_UNICODE=1)
 
 if(WINDOWS)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS=1)
@@ -132,7 +132,8 @@ endif()
 
 if(OLDUNREAL_AMD64)
    add_compile_definitions(WIN64=1)
-elseif(WINDOWS)
+endif()
+if(WINDOWS)
     #
     # /Zc:wchar_t-
     # do not treat wchar_t as a built-in type. Doing so would break binary
@@ -153,12 +154,12 @@ elseif(WINDOWS)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /LARGEADDRESSAWARE")
     set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /LARGEADDRESSAWARE")
     set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /LARGEADDRESSAWARE")
-endif()
-
-# the recursive garbage collector needs a lot of stack space
-set(CMAKE_EXE_LINKER_FLAGS
+    # the recursive garbage collector needs a lot of stack space
+    set(CMAKE_EXE_LINKER_FLAGS
     "${CMAKE_EXE_LINKER_FLAGS} /STACK:16000000,1000000"
 )
+endif()
+
 
 if(CMAKE_COMPILER_IS_GNUCC OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pipe -fsigned-char -fno-strict-aliasing -Wno-inline-new-delete")
@@ -176,13 +177,6 @@ endif()
 # Including External and (or) non Epic libraries
 ################################################################################
 add_subdirectory(MiscLibs/Detours)
-
-# wxWidgets settings
-set(wxUSE_STL ON CACHE INTERNAL "")
-set(wxUSE_REGEX OFF CACHE INTERNAL "")
-set(wxUSE_LIBJPEG OFF CACHE INTERNAL "")
-set(wxUSE_LIBTIFF OFF CACHE INTERNAL "")
-set(wxUSE_ZLIB builtin CACHE INTERNAL "")
 add_subdirectory(MiscLibs/wxWidgets)
 
 ################################################################################
