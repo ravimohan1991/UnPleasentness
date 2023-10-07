@@ -107,8 +107,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${REPOSITORYROOT}/UnpleasentnessBin/${PLATFO
 # Set compiler and linker flags
 ################################################################################
 
-#add_compile_definitions(UNICODE=1)
-#add_compile_definitions(_UNICODE=1)
+# For compiling with ut99 sdk crap (could be generational gap stuff between 1999 and 2023)
+add_compile_definitions(UNICODE=1)
+add_compile_definitions(_UNICODE=1)
 
 if(WINDOWS)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS=1)
@@ -160,7 +161,6 @@ if(WINDOWS)
 )
 endif()
 
-
 if(CMAKE_COMPILER_IS_GNUCC OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pipe -fsigned-char -fno-strict-aliasing -Wno-inline-new-delete")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pipe -fsigned-char -fno-strict-aliasing")
@@ -177,6 +177,12 @@ endif()
 # Including External and (or) non Epic libraries
 ################################################################################
 add_subdirectory(MiscLibs/Detours)
+# wxWidgets settings
+set(wxUSE_STL ON CACHE INTERNAL "")
+set(wxUSE_REGEX OFF CACHE INTERNAL "")
+set(wxUSE_LIBJPEG OFF CACHE INTERNAL "")
+set(wxUSE_LIBTIFF OFF CACHE INTERNAL "")
+set(wxUSE_ZLIB builtin CACHE INTERNAL "")
 add_subdirectory(MiscLibs/wxWidgets)
 
 ################################################################################

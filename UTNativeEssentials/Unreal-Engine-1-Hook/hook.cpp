@@ -34,7 +34,7 @@
 #ifdef HOOK_MAC_PLATFORM
 const char* AntigenFile = "dylib";
 #elif HOOK_WINDOWS_PLATFORM
-const* char AntigenFile = "dll";
+const char* AntigenFile = "dll";
 #endif
 
 KelvinFrame* UE1HookApp::m_Frame = nullptr;
@@ -185,7 +185,7 @@ void KelvinFrame::OnHello(wxCommandEvent& event)
 
 void KelvinFrame::OnOpenFile(wxCommandEvent& event)
 {
-	static wxString title = wxString("Please choose") + wxString(AntigenFile);
+	static wxString title = wxString("Please choose ") + wxString(AntigenFile).MakeUpper();
 
 	wxFileDialog dialog(this, title, wxEmptyString, wxEmptyString, "", wxFD_OPEN);
 
