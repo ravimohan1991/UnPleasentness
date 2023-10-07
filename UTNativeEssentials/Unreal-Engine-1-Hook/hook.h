@@ -49,10 +49,21 @@ void HookingLoop(const char*, const char*);
  */
 enum HookStatus
 {
-	NotReady = 0,			///< Some obstruction encountered, so not ready
-	Ready,					///< Ready for hooking a process
-	Looping,				///< Looping in search of process, usually after loading shared object code file (DLL)
-	Hooked					///< Hooked the custom native code into the process
+	NotReady						= 0x00000000,						///< Some obstruction encountered, so not ready
+	AntigenLoaded					= 0x00000100,						///< Loaded antigen
+	ProcessKnown					= 0x00000010,						///< Target process made known
+	Ready							= 0x00000002,						///< Ready for hooking a process
+	Looping							= 0x00000004,						///< Looping in search of process, usually after loading shared object code file (DLL)
+	Hooked							= 0x00000006,						///< Hooked the custom native code into the process
+	BothProcessAntigen				= ProcessKnown | AntigenLoaded		//< Both process and antigen are cached
+};
+
+/**
+ * @brief For tracking OpenProcess menu entry
+ */
+enum
+{
+	ID_Process = 1				///< Process open menu entry
 };
 
 /**
@@ -101,6 +112,13 @@ public:
 	 * @brief For setting the hook status
 	 */
 	void SetStatus(HookStatus status) { m_HookStatus = status; }
+
+	/**
+	 * @brief For setting multiple status flags
+	 * 
+	 * So that we may know if both process and antigen are loaded
+	 */
+	void OrStatus(HookStatus status) { m_HookStatus = HookStatus(m_HookStatus | status); }
 
 	inline void SetFileName(const wxString fileName) { m_FileName = fileName; }
 	inline void SetProcessName(const wxString processName) { m_ProcessName = processName; }
@@ -174,10 +192,13 @@ private:
 	 * @brief OpenFile entry callback
 	 *
 	 * Opens up OpenFile dialog window
-	 *
-	 * @see UDKHalo::UDKHalo()
 	 */
 	void OnOpenFile(wxCommandEvent& event);
+
+	/**
+	 * @brief Open executable process callback
+	 */
+	void OnOpenProcess(wxCommandEvent& event);
 
 	/**
 	 * @brief Reset the state of UE1Hook
@@ -186,14 +207,18 @@ private:
 
 public:
 	/**
-	 * @brief Actually do the injection procedure
+	 * @brief Select and cache the antigen
 	 *
-	 * @param filename		The absolute path of file
+	 * @param filename		The absolute path of file (DLL or SO or DYLIB)
 	 * 
 	 * @todo write injection process for platforms
-	 * @todo make UI arrangements for selecting relevant process
 	 */
-	void OpenFile(wxString filename, bool openAtRight);
+	void OpenAntigenFile(wxString filename);
+
+	/**
+	 * @brief Select and cache the target process
+	 */
+	void OpenProcessFile(wxString filename);
 
 	/**
 	 * @brief Getter for Log panel

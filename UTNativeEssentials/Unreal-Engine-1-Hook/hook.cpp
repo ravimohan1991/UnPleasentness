@@ -37,6 +37,12 @@ const char* AntigenFile = "dylib";
 const char* AntigenFile = "dll";
 #endif
 
+#ifdef HOOK_MAC_PLATFORM
+const char* ProcessFile = "dylib";
+#elif HOOK_WINDOWS_PLATFORM
+const char* ProcessFile = "exe";
+#endif
+
 KelvinFrame* UE1HookApp::m_Frame = nullptr;
 
 wxIMPLEMENT_APP_CONSOLE(UE1HookApp);
@@ -110,6 +116,9 @@ KelvinFrame::KelvinFrame()
 	menuFile->Append(wxID_OPEN, "&Load Antigen...\tCtrl-H",
 		"Select a DLL, SO, or DYLIB");
 	menuFile->AppendSeparator();
+	menuFile->Append(ID_Process, "&Load Process...\tCtrl-P",
+		"Select an executable process");
+	menuFile->AppendSeparator();
 	menuFile->Append(wxID_RESET, "&Reset", "Reset the hooking state");
 	menuFile->AppendSeparator();
 	menuFile->Append(wxID_EXIT, "Quit UE1Hook", "Quit Hooking");
@@ -164,6 +173,7 @@ KelvinFrame::KelvinFrame()
 	//wxEventLoopBase *injectorLoop = wxAppTraits::CreateEventLoop();
 
 	Bind(wxEVT_MENU, &KelvinFrame::OnOpenFile, this, wxID_OPEN);
+	Bind(wxEVT_MENU, &KelvinFrame::OnOpenProcess, this, ID_Process);
 	Bind(wxEVT_MENU, &KelvinFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &KelvinFrame::OnReset, this, wxID_RESET);
 	Bind(wxEVT_MENU, &KelvinFrame::OnExit, this, wxID_EXIT);
@@ -206,6 +216,79 @@ void KelvinFrame::OnHello(wxCommandEvent& event)
 	wxLogMessage("Hello world from wxWidgets!");
 }
 
+void KelvinFrame::OnOpenProcess(wxCommandEvent& event)
+{
+	static wxString title = wxString("Please choose ") + wxString(ProcessFile).MakeUpper();
+
+	wxFileDialog dialog(this, title, wxEmptyString, wxEmptyString, "", wxFD_OPEN);
+
+	if (dialog.ShowModal() == wxID_OK)
+	{
+		wxString filename(dialog.GetFilename());
+
+		wxFileSystem currentFileSystem;
+
+		wxFSFile* currentFile = currentFileSystem.OpenFile(filename);
+
+		if (wxGetApp().GetStatus() == HookStatus::Ready && filename.find(ProcessFile) == wxString::npos)
+		{
+			LogMessage("Sorry, UE1Hook can't and won't work with unfamiliar \"processes\".");
+
+			static wxString correctionMessage = wxString("Please look for .") + wxString(ProcessFile);
+
+			LogMessage(correctionMessage);
+		}
+		else
+		{
+			HookStatus status = wxGetApp().GetStatus();
+			switch (wxGetApp().GetStatus())
+			{
+			case HookStatus::Ready:
+				OpenProcessFile(filename);
+				if (wxGetApp().GetStatus() == HookStatus::BothProcessAntigen)
+				{
+					wxGetApp().ActivateInjectorLoop(true);
+					wxGetApp().SetStatus(HookStatus::Looping);
+				}
+				else
+				{
+					AddLogText("Antigen file name required");
+				}
+				break;
+
+			case HookStatus::AntigenLoaded | HookStatus::Ready:
+				OpenProcessFile(filename);
+				if (wxGetApp().GetStatus() == HookStatus(BothProcessAntigen | Ready))
+				{
+					wxGetApp().ActivateInjectorLoop(true);
+					wxGetApp().SetStatus(HookStatus::Looping);
+				}
+				break;
+
+			case HookStatus::NotReady:
+				AddLogText(wxString("UE1Hook not ready for injection"));
+				break;
+
+			case HookStatus::Hooked:
+				AddLogText(wxString("UE1Hook already hooked a file (containing antigen)"));
+				AddLogText("Try after File->Reset");
+				break;
+
+			case HookStatus::Looping:
+				AddLogText(wxString("In middle of hooking a file (containing antigen)"));
+				AddLogText("Try after File->Reset");
+				break;
+
+			default:
+				break;
+			}
+
+		}
+	}
+
+}
+
+// File with Antigen
 void KelvinFrame::OnOpenFile(wxCommandEvent& event)
 {
 	static wxString title = wxString("Please choose ") + wxString(AntigenFile).MakeUpper();
@@ -227,31 +310,31 @@ void KelvinFrame::OnOpenFile(wxCommandEvent& event)
 			static wxString correctionMessage = wxString("Please look for .") + wxString(AntigenFile);
 
 			LogMessage(correctionMessage);
-
-			/*
-			switch (wxGetApp().GetStatus())
-			{
-				case HookStatus::Hooked:
-				case HookStatus::Looping:
-					wxGetApp().ActivateInjectorLoop(false);
-					HookOmega("New antigen file load attempt");
-					wxGetApp().SetStatus(HookStatus::NotReady);
-					InitHooking();
-					break;
-
-				case HookStatus::Ready:
-				case HookStatus::NotReady:
-					break;
-			}*/
 		}
 		else
 		{
 			switch (wxGetApp().GetStatus())
 			{
 				case HookStatus::Ready:
-					OpenFile(filename, true);
-					wxGetApp().ActivateInjectorLoop(true);
-					wxGetApp().SetStatus(HookStatus::Looping);
+					OpenAntigenFile(filename);
+					if (wxGetApp().GetStatus() == HookStatus::BothProcessAntigen)
+					{
+						wxGetApp().ActivateInjectorLoop(true);
+						wxGetApp().SetStatus(HookStatus::Looping);
+					}
+					else
+					{
+						AddLogText("Target process name required");
+					}
+					break;
+
+				case HookStatus::ProcessKnown | HookStatus::Ready:
+					OpenAntigenFile(filename);
+					if (wxGetApp().GetStatus() == HookStatus(BothProcessAntigen | Ready))
+					{
+						wxGetApp().ActivateInjectorLoop(true);
+						wxGetApp().SetStatus(HookStatus::Looping);
+					}
 					break;
 
 				case HookStatus::NotReady:
@@ -276,17 +359,22 @@ void KelvinFrame::OnOpenFile(wxCommandEvent& event)
 	}
 }
 
-void KelvinFrame::OpenFile(wxString filename, bool openAtRight)
+void KelvinFrame::OpenProcessFile(wxString filename)
+{
+	wxGetApp().SetProcessName(filename);
+	LogMessage("Targetting the process " + filename);
+
+	wxGetApp().OrStatus(HookStatus::ProcessKnown);
+}
+
+void KelvinFrame::OpenAntigenFile(wxString filename)
 {
 	wxGetApp().SetFileName(filename);
 
 	wxString tempoString(filename);
 	LogMessage(wxString("Antigen code file ") + tempoString + wxString(" loaded"));
 
-	wxString anotherTempoString("UnrealTournament.exe");
-
-	wxGetApp().SetProcessName(anotherTempoString);
-	LogMessage("Targetting the process " + anotherTempoString);
+	wxGetApp().OrStatus(HookStatus::AntigenLoaded);
 }
 
 void KelvinFrame::LogMessage(const wxString& logMessage)
