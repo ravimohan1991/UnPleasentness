@@ -176,8 +176,7 @@ void KelvinFrame::OnReset(wxCommandEvent& event)
 		case HookStatus::Hooked:
 		case HookStatus::Looping:
 			wxGetApp().ActivateInjectorLoop(false);
-			HookOmega("UserReset");
-			wxGetApp().SetStatus(HookStatus::NotReady);
+			HookOmega("User Reset");
 			InitHooking();
 			break;
 
@@ -540,7 +539,7 @@ BOOL EjectDll(DWORD dwPID, LPCTSTR szDllPath)
 PROCESSENTRY32 entry;
 HANDLE snapshot;
 
-const char* dllFullPath;
+const char* dllFullPath = nullptr;
 
 bool HookAlpha()
 {
@@ -571,11 +570,18 @@ void HookOmega(const wxString haltMessage)
 	}
 	else
 	{
-		log_add(haltMessage);
+		log_add(haltMessage.c_str());
 	}
 
-	EjectDll(entry.th32ProcessID, GetWC(dllFullPath));
+	if (dllFullPath != nullptr)
+	{
+		EjectDll(entry.th32ProcessID, GetWC(dllFullPath));
+	}
 	wxGetApp().SetStatus(HookStatus::NotReady);
+
+	// reset variables
+	snapshot = nullptr;
+	dllFullPath = nullptr;
 
 	CloseHandle(snapshot);
 }

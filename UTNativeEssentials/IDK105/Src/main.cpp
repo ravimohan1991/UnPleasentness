@@ -146,8 +146,20 @@ void GetCameraLocation (FVector &InputLocation, FRotator &InputRotation)
 	InputRotation = Parms.CameraRotation;
 }
 
-void inline PawnIterator(UCanvas* Canvas)
+typedef void(*tDrawActor)(FSceneNode*, AActor*);
+tDrawActor MyDrawActor = NULL;
+
+struct DrawActor_Parms
 {
+	AActor* Actor;
+	BITFIELD WireFrame;
+	BITFIELD ClearZ;
+};
+
+void inline PawnIterator(FSceneNode* FS)
+{
+	UCanvas* Canvas = FS->Viewport->Canvas;
+
 	if (!bHook || !Me) return;
 
 	if(b2DRadar)
@@ -168,9 +180,60 @@ void inline PawnIterator(UCanvas* Canvas)
 		return;
 	}
 
+	//UFunction* F = Canvas->FindFunctionChecked(L"DrawActor");
+
 	for(APawn* Pawn = Me->Level->PawnList; Pawn->nextPawn != nullptr; Pawn = Pawn->nextPawn)
 	{
-		APawn *Target= Pawn;
+		APawn *Target = Pawn;
+
+		if (Target && IsEnemy(Target))
+		{
+			UFunction* F = Canvas->FindFunctionChecked(L"DrawActor");
+			if (F != NULL)
+			{
+				DrawActor_Parms Params;
+				Params.Actor = Target;
+				Params.WireFrame = true;
+				Params.ClearZ = true;
+
+				GLog->Logf(TEXT("Attempting DrawActor"));
+				Canvas->ProcessEvent(F, &Params);
+
+				//Target->bHidden = NEXT_BITFIELD(1);
+			}
+
+			Target->LightEffect = LE_NonIncidence;
+			Target->LightType = LT_Steady;
+			Target->AmbientGlow = 150;
+			Target->LightRadius = 005;
+			Target->LightBrightness = 255;
+			Target->LightSaturation = 100;
+
+			switch (Target->PlayerReplicationInfo->Team)
+			{
+				case 0:
+				Target->LightHue = 255;
+				break;
+
+				case 1:
+				Target->LightHue = 170;
+				break;
+
+				case 2:
+				Target->LightHue = 85;
+				break;
+
+				case 3:
+				Target->LightHue = 40;
+				break;
+
+			default:
+				Target->LightHue = 85;
+				break;
+			}
+
+			//MyDrawActor(FS, Target);
+		}
 
 		if (ValidTarget(Target))
 		{
@@ -207,13 +270,21 @@ void inline PawnIterator(UCanvas* Canvas)
 	}
 }
 
-void MyPostRender (UCanvas* Canvas)
+void MyPostRender (FSceneNode* FS)
 {
+	UCanvas* Canvas = FS->Viewport->Canvas;
+
 	if ( !ValidRender(Canvas) ) return;
+
+	if (MyDrawActor == NULL)
+	{
+		//HMODULE hDll = LoadLibraryA("Render.dll");
+		//MyDrawActor = (tDrawActor)GetProcAddress(hDll, "?DrawActor@URender@@UAEXPAUFSceneNode@@PAVAActor@@@Z");
+	}
 
 	Me = Canvas->Viewport->Actor;
 
-	PawnIterator(Canvas);
+	PawnIterator(FS);
 	CheckKeys(Canvas);
 
 	Init(Canvas);
@@ -238,7 +309,7 @@ tPostRender oPostRender = NULL;
 
 void xPostRender(FSceneNode *FS)
 {
-	MyPostRender(FS->Viewport->Canvas);
+	MyPostRender(FS);
 
 	//GLog->Logf(TEXT("Detour is in action"));
 }
