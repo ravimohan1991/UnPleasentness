@@ -200,6 +200,8 @@ link_directories(Core/Lib Engine/Lib Window/Lib)
 # Native Labs
 ################################################################################
 add_subdirectory(IDK105)
+add_subdirectory(Morbid)
+
 add_subdirectory(Unreal-Engine-1-Hook)
 
 add_subdirectory(SimpleLoopSubject)
@@ -209,14 +211,19 @@ target_include_directories(IDK
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/Engine/Inc)
+
+target_include_directories(Morbid
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Engine/Inc)
 		
 
 ################################################################################
 # Target Linking Rules
 ################################################################################
 target_link_libraries(IDK PUBLIC Core Engine Detours)
+target_link_libraries(Morbid PUBLIC Core Engine Detours)
 target_link_libraries(UEHook PUBLIC wx::core wx::aui)
-
 target_link_libraries(DetoursExampule PUBLIC Detours)
 
 # end of CMakeLists.txt ...
