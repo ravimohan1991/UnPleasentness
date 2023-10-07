@@ -47,6 +47,21 @@ void AddLogText(const wxString log)
 	wxGetApp().GetMyFrame()->LogMessage(log);
 }
 
+void InitHooking()
+{
+	bool bShouldLoop = HookAlpha();
+
+	if (bShouldLoop)
+	{
+		AddLogText("UE1Hook is ready for, well, Hooking! Hook'em all!!");
+		wxGetApp().SetStatus(HookStatus::Ready);
+	}
+	else
+	{
+		AddLogText("Encountered an injection obstruction");
+	}
+}
+
 bool UE1HookApp::OnInit()
 {
 	m_Frame = new KelvinFrame();
@@ -57,18 +72,7 @@ bool UE1HookApp::OnInit()
 	m_FileName = m_ProcessName = wxString("");
 	m_HookStatus = HookStatus::NotReady;
 
-	bool bShouldLoop = HookAlpha();
-
-	if (bShouldLoop)
-	{
-		AddLogText("UE1Hook is ready for, well, Hooking! Hook'em all!!");
-		m_HookStatus = HookStatus::Ready;
-	}
-	else
-	{
-		AddLogText("Encountered an injection obstruction");
-	}
-
+	InitHooking();
 	return true;
 }
 
@@ -105,6 +109,8 @@ KelvinFrame::KelvinFrame()
 	wxMenu* menuFile = new wxMenu;
 	menuFile->Append(wxID_OPEN, "&Load Antigen...\tCtrl-H",
 		"Select a DLL, SO, or DYLIB");
+	menuFile->AppendSeparator();
+	menuFile->Append(wxID_RESET, "&Reset", "Reset the hooking state");
 	menuFile->AppendSeparator();
 	menuFile->Append(wxID_EXIT, "Quit UE1Hook", "Quit Hooking");
 
@@ -159,8 +165,26 @@ KelvinFrame::KelvinFrame()
 
 	Bind(wxEVT_MENU, &KelvinFrame::OnOpenFile, this, wxID_OPEN);
 	Bind(wxEVT_MENU, &KelvinFrame::OnAbout, this, wxID_ABOUT);
-	//Bind(wxEVT_SIZING, &KelvinFrame::OnUpdateUI, this, wxID_RESIZE_FRAME);
+	Bind(wxEVT_MENU, &KelvinFrame::OnReset, this, wxID_RESET);
 	Bind(wxEVT_MENU, &KelvinFrame::OnExit, this, wxID_EXIT);
+}
+
+void KelvinFrame::OnReset(wxCommandEvent& event)
+{
+	switch (wxGetApp().GetStatus())
+	{
+		case HookStatus::Hooked:
+		case HookStatus::Looping:
+			wxGetApp().ActivateInjectorLoop(false);
+			HookOmega("UserReset");
+			wxGetApp().SetStatus(HookStatus::NotReady);
+			InitHooking();
+			break;
+
+		case HookStatus::Ready:
+		case HookStatus::NotReady:
+			break;
+	}
 }
 
 void KelvinFrame::OnExit(wxCommandEvent& event)
@@ -168,7 +192,7 @@ void KelvinFrame::OnExit(wxCommandEvent& event)
 	wxGetApp().ActivateInjectorLoop(false);
 	event.Skip(); // don't stop event, we still want window to close
 
-	HookOmega();
+	HookOmega("");
 	Close(true);
 }
 
@@ -205,7 +229,21 @@ void KelvinFrame::OnOpenFile(wxCommandEvent& event)
 
 			LogMessage(correctionMessage);
 
-			wxGetApp().ActivateInjectorLoop(false);
+			/*
+			switch (wxGetApp().GetStatus())
+			{
+				case HookStatus::Hooked:
+				case HookStatus::Looping:
+					wxGetApp().ActivateInjectorLoop(false);
+					HookOmega("New antigen file load attempt");
+					wxGetApp().SetStatus(HookStatus::NotReady);
+					InitHooking();
+					break;
+
+				case HookStatus::Ready:
+				case HookStatus::NotReady:
+					break;
+			}*/
 		}
 		else
 		{
@@ -214,6 +252,7 @@ void KelvinFrame::OnOpenFile(wxCommandEvent& event)
 				case HookStatus::Ready:
 					OpenFile(filename, true);
 					wxGetApp().ActivateInjectorLoop(true);
+					wxGetApp().SetStatus(HookStatus::Looping);
 					break;
 
 				case HookStatus::NotReady:
@@ -222,10 +261,12 @@ void KelvinFrame::OnOpenFile(wxCommandEvent& event)
 
 				case HookStatus::Hooked:
 					AddLogText(wxString("UE1Hook already hooked a file (containing antigen)"));
+					AddLogText("Try after File->Reset");
 					break;
 
 				case HookStatus::Looping:
 					AddLogText(wxString("In middle of hooking a file (containing antigen)"));
+					AddLogText("Try after File->Reset");
 					break;
 
 				default:
@@ -288,8 +329,13 @@ bool HookAlpha()
 	return false;
 }
 
-void HookOmega()
-{}
+void HookOmega(const wxString haltMessage)
+{
+	if(haltMessage != "")
+	{
+		AddLogText(haltMessage);
+	}
+}
 
 void HookingLoop(const char* processName, const char* dllPath)
 {
@@ -517,11 +563,20 @@ bool HookAlpha()
 	}
 }
 
-void HookOmega()
+void HookOmega(const wxString haltMessage)
 {
-	log_add("Unhooking, goodbye");
+	if(haltMessage == "")
+	{
+		log_add("Unhooking, goodbye");
+	}
+	else
+	{
+		log_add(haltMessage);
+	}
 
 	EjectDll(entry.th32ProcessID, GetWC(dllFullPath));
+	wxGetApp().SetStatus(HookStatus::NotReady);
+
 	CloseHandle(snapshot);
 }
 

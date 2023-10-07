@@ -40,7 +40,7 @@ class KelvinFrame;
 
 // Global functions
 bool HookAlpha();
-void HookOmega();
+void HookOmega(const wxString haltText);
 
 void HookingLoop(const char*, const char*);
 
@@ -178,6 +178,11 @@ private:
 	 * @see UDKHalo::UDKHalo()
 	 */
 	void OnOpenFile(wxCommandEvent& event);
+
+	/**
+	 * @brief Reset the state of UE1Hook
+	 */
+	void OnReset(wxCommandEvent& event);
 
 public:
 	/**
