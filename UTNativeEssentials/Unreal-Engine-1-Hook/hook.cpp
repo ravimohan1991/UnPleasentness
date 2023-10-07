@@ -109,6 +109,12 @@ void UE1HookApp::OnIdle(wxIdleEvent& event)
 	}
 }
 
+void UE1HookApp::SetStatus(HookStatus status)
+{ 
+	m_HookStatus = status; 
+	GetMyFrame()->GetProcessInfoPanel()->SetHookStatus(m_HookStatus);
+}
+
 KelvinFrame::KelvinFrame()
 	: wxFrame(nullptr, wxID_ANY, "UnPleasentness Injector")
 {
@@ -190,7 +196,13 @@ void KelvinFrame::OnReset(wxCommandEvent& event)
 			InitHooking();
 			break;
 
-		case HookStatus::Ready:
+		case HookStatus(Ready | ProcessKnown):
+			wxGetApp().SetStatus(Ready);
+			wxGetApp().GetMyFrame()->GetProcessInfoPanel()->SetProcessName(wxT("No Process"));
+			wxGetApp().GetMyFrame()->GetProcessInfoPanel()->PaintNow();
+			HookOmega("User reset");
+			InitHooking();
+			break;
 		case HookStatus::NotReady:
 			break;
 	}
@@ -359,12 +371,20 @@ void KelvinFrame::OnOpenFile(wxCommandEvent& event)
 	}
 }
 
+void UE1HookApp::SetProcessName(const wxString processName)
+{
+	m_ProcessName = processName;
+	GetMyFrame()->GetProcessInfoPanel()->SetProcessName(m_ProcessName);
+
+	GetMyFrame()->GetProcessInfoPanel()->PaintNow();
+}
+
 void KelvinFrame::OpenProcessFile(wxString filename)
 {
+	wxGetApp().OrStatus(HookStatus::ProcessKnown);
+
 	wxGetApp().SetProcessName(filename);
 	LogMessage("Targetting the process " + filename);
-
-	wxGetApp().OrStatus(HookStatus::ProcessKnown);
 }
 
 void KelvinFrame::OpenAntigenFile(wxString filename)
@@ -389,10 +409,51 @@ void KelvinFrame::OnUpdateUI(wxEvent& event)
 	m_LogPanel->GetLogTextControl()->AppendText(wxString("Update UI\n"));
 }*/
 
-
-void InfoPanel::Set(wxFileName flnm, uint64_t lenght, wxString AccessMode, int FD, wxString XORKey)
+InfoPanel::InfoPanel(wxWindow* parent, int id, wxPoint pos, wxSize size, int style) : wxPanel(parent, id, pos, size, style)
 {
+	m_ProcessName = "No Process";
+}
 
+void InfoPanel::PaintEvent(wxPaintEvent& evt)
+{
+	wxPaintDC dc(this);
+	Render(dc);
+}
+
+void InfoPanel::PaintNow()
+{
+	wxClientDC dc(this);
+	Render(dc);
+}
+
+void InfoPanel::Render(wxDC& dc)
+{
+	// draw some text
+	if (m_ProcessName == "No Process")
+	{
+		dc.Clear();
+		dc.DrawText(m_ProcessName, 10, 5);
+	}
+	else if(m_HookStatus == HookStatus(Ready | ProcessKnown) && m_HookStatus != HookStatus(Ready | BothProcessAntigen))
+	{
+		dc.Clear();
+
+		wxColour processColor(150, 75, 0);
+		dc.SetTextForeground(processColor);
+
+		dc.DrawText(m_ProcessName, 10, 5);
+
+		// Maybe indicate about process active or not. May become complicated
+
+		wxColour statusColor(200, 10, 10);
+		dc.SetTextForeground(statusColor);
+
+		dc.DrawText(wxT("UnHooked"), dc.GetTextExtent(m_ProcessName).x + 40, 5);
+	}
+}
+
+void InfoPanel::Set()
+{
 }
 
 LogPanel::LogPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name) : wxPanel(parent, id, pos, size, style)

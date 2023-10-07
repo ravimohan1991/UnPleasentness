@@ -111,17 +111,17 @@ public:
 	/**
 	 * @brief For setting the hook status
 	 */
-	void SetStatus(HookStatus status) { m_HookStatus = status; }
+	void SetStatus(HookStatus status);
 
 	/**
 	 * @brief For setting multiple status flags
 	 * 
 	 * So that we may know if both process and antigen are loaded
 	 */
-	void OrStatus(HookStatus status) { m_HookStatus = HookStatus(m_HookStatus | status); }
+	inline void OrStatus(HookStatus status) { SetStatus(HookStatus(m_HookStatus | status)); }
 
 	inline void SetFileName(const wxString fileName) { m_FileName = fileName; }
-	inline void SetProcessName(const wxString processName) { m_ProcessName = processName; }
+	void SetProcessName(const wxString processName);
 
 	inline const wxString& GetFileName() const { return m_FileName; }
 	inline const wxString& GetProcessName() const { return m_ProcessName; }
@@ -232,6 +232,11 @@ public:
 	 */
 	void LogMessage(const wxString& logMessage);
 
+	/**
+	 * @brief getter for m_ProcessInfoPanel
+	 */
+	std::shared_ptr<InfoPanel> GetProcessInfoPanel() const { return m_ProcessInfoPanel; }
+
 private:
 	/**
 	 * @brief For managing varitey of panes or panels
@@ -273,12 +278,66 @@ private:
 class InfoPanel : public wxPanel
 {
 public:
-	InfoPanel(wxWindow* parent, int id = -1, wxPoint pos = wxDefaultPosition, wxSize size = wxSize(-1, -1), int style = wxTAB_TRAVERSAL)
-		: wxPanel(parent, id, pos, size, style) {}
+	InfoPanel(wxWindow* parent, int id = -1, wxPoint pos = wxDefaultPosition, wxSize size = wxSize(-1, -1), int style = wxTAB_TRAVERSAL);
 
-	void Set(wxFileName flnm, uint64_t lenght, wxString AccessMode, int FD, wxString XORKey);
+	void Set();
 	void OnUpdate(wxCommandEvent& event) {}
+
+	void SetProcessName(const wxString& pName) { m_ProcessName = pName; }
+	void SetPID(const wxString pID) { m_PID = pID; }
+	void SetHookStatus(HookStatus status) { m_HookStatus = status; }
+	void SetProcessIcon(const wxIcon& icon) { m_ProcessIcon = icon; }
+	const wxString& GetProcessName() const { return m_ProcessName; }
+	const wxString& GetPID() const { return m_PID; }
+	const HookStatus& GetHookStatus() const { return m_HookStatus; }
+	const wxIcon& GetProcessIcon() const { return m_ProcessIcon; }
+
+	// Rendering part
+	// Courtsey: https://wiki.wxwidgets.org/Drawing_on_a_panel_with_a_DC
+
+	/**
+	 * @brief Called by the system of by wxWidgets when the panel needs
+	 * to be redrawn. You can also trigger this call by
+	 * calling Refresh()/Update().
+	 */
+	void PaintEvent(wxPaintEvent& evt);
+
+	/**
+	 * Alternatively, you can use a clientDC to paint on the panel
+	 * at any time. Using this generally does not free you from
+	 * catching paint events, since it is possible that e.g. the window
+	 * manager throws away your drawing when the window comes to the
+	 * background, and expects you will redraw it when the window comes
+	 * back (by sending a paint event).
+	 *
+	 * In most cases, this will not be needed at all; simply handling
+	 * paint events and calling Refresh() when a refresh is needed
+	 * will do the job.
+	 */
+	void PaintNow();
+
+	/**
+	 * Here we do the actual rendering. I put it in a separate
+	 * method so that it can work no matter what type of DC
+	 * (e.g. wxPaintDC or wxClientDC) is used.
+	 */
+	void Render(wxDC& dc);
+
+private:
+	wxString m_ProcessName;
+	wxString m_PID;
+	wxIcon m_ProcessIcon;
+	HookStatus m_HookStatus;
+
+	DECLARE_EVENT_TABLE()
 };
+
+BEGIN_EVENT_TABLE(InfoPanel, wxPanel)
+
+// catch paint events
+EVT_PAINT(InfoPanel::PaintEvent)
+
+END_EVENT_TABLE()
 
 /// <summary>
 /// Class for panel with logging
