@@ -119,7 +119,6 @@ void cRadar::DrawPlayerOnRadar (UCanvas* Canvas, APawn *Target)
 
 void inline cRadar::DrawPlayer2DRadar (UCanvas* Canvas, APawn* Target, float PosX_, float PosY_, float Width, float Height)
 {
-	// 10, 177, 134, 137
 	static float borderGap = 8.0f;
 
 	if (!b2DRadar)
@@ -136,28 +135,25 @@ void inline cRadar::DrawPlayer2DRadar (UCanvas* Canvas, APawn* Target, float Pos
 	
 	D = (Target->Location - MyCameraLocation);
 	D.Z = 0;
+
+	static float largestTargetD = 0.0f;
+
+	if (D.Size2D() > largestTargetD)
+	{
+		largestTargetD = D.Size2D();
+	}
+
+	// Embrace for some High-School mathematics, eh!!
 	
 	float origPosX = PosX_ + Width / 2.0f; // center x
 	float origPosY = PosY_ + Height / 2.0f; // center y
 
-	float xRadarCoordinate = (Width - 2.0f * borderGap) / 2;
-	float yRadarCoordinate = (Height - 2.0f * borderGap) / 2;
+	float xRadarCoordinate = (Width - 2.0f * borderGap) / 2 * (D.Size2D() / largestTargetD);
+	float yRadarCoordinate = (Height - 2.0f * borderGap) / 2 * (D.Size2D() / largestTargetD);
 
-	//X = X * xRadarCoordinate;
-	//Y = Y * yRadarCoordinate;
 
 	float PosX = origPosX + Dot(D, X) / (D.Size2D()) * xRadarCoordinate;
 	float PosY = origPosY + Dot(D, Y) / (D.Size2D()) * yRadarCoordinate;
-
-	/*
-	if (PosX < + 17)
-		PosX = + 17;
-	if (PosX > + 133)
-		PosX = + 133;
-	if (PosY < + 185)
-		PosY = + 185;
-	if (PosY > + 303)
-		PosY = + 303;*/
 
 	Canvas->Color = GetTeamColor(Target);
 
