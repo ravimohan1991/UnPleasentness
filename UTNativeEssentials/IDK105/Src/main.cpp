@@ -77,6 +77,7 @@ void Init (UCanvas* Canvas)
 	if (bInit) return;
 
 	LoadTexture(WhiteTexture, "UWindow.WhiteTexture");
+	LoadFont(SmallFont, "LadderFonts.UTLadder22");
 
 	bInit = true;
 }
@@ -263,7 +264,10 @@ void MyPostRender (FSceneNode* FS)
 {
 	UCanvas* Canvas = FS->Viewport->Canvas;
 
-	if ( !ValidRender(Canvas) ) return;
+	if (!ValidRender(Canvas))
+	{
+		return;
+	}
 
 	Me = Canvas->Viewport->Actor;
 
@@ -277,7 +281,7 @@ void MyPostRender (FSceneNode* FS)
 	if(bSettings)
 	{
 		Hook.cM->DrawBox(Canvas, 10, 177.0f + 137.0f * Scale + 25, 134.0f * Scale, 137.0f * Scale);
-		Hook.cM->DrawSettings(Canvas);
+		Hook.cM->DrawSettings(Canvas, 10, 177.0f + 137.0f * Scale + 25, 134.0f * Scale, 137.0f * Scale);
 	}
 
 	if(bInfo)

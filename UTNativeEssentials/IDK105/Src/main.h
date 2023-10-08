@@ -316,6 +316,13 @@ if (Texture == NULL) \
 	if (Texture != NULL) Texture->SetFlags(RF_Keep); \
 } \
 
+#define LoadFont(Font,Name) \
+if (Font == NULL) \
+{ \
+	Font = (UFont*)UFont::StaticLoadObject(UFont::StaticClass(), NULL, TEXT(Name), NULL, LOAD_NoWarn, NULL); \
+	if (Font != NULL) Font->SetFlags(RF_Keep); \
+} \
+
 #define ValidRender(Canvas) ( \
 	(Canvas != NULL) && \
 	(Canvas->SmallFont != NULL) && \
@@ -327,8 +334,8 @@ if (Texture == NULL) \
 #define DefPawn		(UClass*)UClass::StaticLoadClass(AActor::StaticClass(), NULL, TEXT("Engine.Pawn"),		NULL, LOAD_NoFail, NULL)
 template<class T> class AObjectIterator : public FObjectIterator
 {
-    public:
-	    AObjectIterator(UClass* InClass = T::StaticClass())
+	public:
+		AObjectIterator(UClass* InClass = T::StaticClass())
 			:	FObjectIterator(InClass)
 		{}
 
@@ -411,27 +418,27 @@ FColor GetTeamColor (APawn* Target)
 	}
 }
 
-void DrawText(UCanvas* Canvas, FString Str, float PosX, float PosY, FColor Color)
+void DrawMyText(UCanvas* Canvas, FString Str, float PosX, float PosY, FColor Color, UFont* Font)
 {
-    FColor TempColor = Canvas->Color;
+	FColor TempColor = Canvas->Color;
 	Canvas->Color = FColor(0, 0, 0, 255);
 
 	SetPos(PosX-1, PosY)
-	Canvas->WrappedPrintf(Canvas->SmallFont, 0, L"%s", Str);
+	Canvas->WrappedPrintf(Font, 0, L"%s", Str);
 
 	SetPos(PosX+1, PosY)
-	Canvas->WrappedPrintf(Canvas->SmallFont, 0, L"%s", Str);
+	Canvas->WrappedPrintf(Font, 0, L"%s", Str);
 
 	SetPos(PosX, PosY-1)
-	Canvas->WrappedPrintf(Canvas->SmallFont, 0, L"%s", Str);
+	Canvas->WrappedPrintf(Font, 0, L"%s", Str);
 
 	SetPos(PosX, PosY+1)
-	Canvas->WrappedPrintf(Canvas->SmallFont, 0, L"%s", Str);
+	Canvas->WrappedPrintf(Font, 0, L"%s", Str);
 
 
 	SetPos(PosX, PosY)
 	Canvas->Color = Color;
-	Canvas->WrappedPrintf(Canvas->SmallFont, 0, L"%s", Str);
+	Canvas->WrappedPrintf(Font, 0, L"%s", Str);
 	Canvas->Color = TempColor;
 }
 

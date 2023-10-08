@@ -45,7 +45,7 @@ FVector cRadar::WorldToScreen (UCanvas* Canvas, FVector WorldLocation)
 
 void cRadar::DrawBoundingBox(UCanvas* Canvas, APawn* Target)
 {
-    static TCHAR StrTemp[MAX_PATH];
+	static TCHAR StrTemp[MAX_PATH];
 	FVector X,Y,Z,E,D,F,top,bottom;
 	float width, Left, Right, Top, Bot;
 	FColor Color = GetTeamColor(Target);
@@ -55,8 +55,10 @@ void cRadar::DrawBoundingBox(UCanvas* Canvas, APawn* Target)
 	D = Target->Location - MyCameraLocation;
 	E = D /= D.Size();
 
-	if(Dot(E,X) <= cos(90 * PI / 180)) 
-	     return;
+	if (Dot(E, X) <= cos(90 * PI / 180))
+	{
+		return;
+	}
  
 	top = Target->Location;
 	top.Z += Target->CollisionHeight * 1.1;
@@ -82,14 +84,16 @@ void cRadar::DrawBoundingBox(UCanvas* Canvas, APawn* Target)
 
 	F = Target->Location - MyCameraLocation;
 
+	UFont* theFont = SmallFont;
+
 	appSnprintf(StrTemp, 40, L"%s", Target->PlayerReplicationInfo->PlayerName);
-	DrawText(Canvas,StrTemp,Right + 3,Top,GetTeamColor(Target));
+	DrawMyText(Canvas,StrTemp,Right + 3,Top,GetTeamColor(Target), theFont);
 
 	appSnprintf(StrTemp, 40, L"H:%d", Target->Health);
-	DrawText(Canvas, StrTemp, Right + 3, Top + 8, GetTeamColor(Target));
+	DrawMyText(Canvas, StrTemp, Right + 3, Top + 8, GetTeamColor(Target), theFont);
 
 	appSnprintf(StrTemp, 40, TEXT("D:%.0f"), F.Size() / 48);
-	DrawText(Canvas,StrTemp,Right + 3,Top + 16,GetTeamColor(Target));
+	DrawMyText(Canvas,StrTemp,Right + 3,Top + 16,GetTeamColor(Target), theFont);
 
 	if (bHealthbars)
 	{
