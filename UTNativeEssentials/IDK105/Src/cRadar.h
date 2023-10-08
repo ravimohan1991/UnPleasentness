@@ -11,7 +11,7 @@ public:
 	cRadar();
 	~cRadar();
 	void DrawPlayerOnRadar (UCanvas* Canvas, APawn *Target);
-	void inline DrawPlayer2DRadar (UCanvas* Canvas, APawn* Target);
+	void inline DrawPlayer2DRadar (UCanvas* Canvas, APawn* Target, float PosX, float PosY, float Width, float Height);
 	void inline DrawHealthBar (UCanvas* Canvas, float PosX, float PosY, int Health);
 };
 
@@ -99,7 +99,7 @@ void cRadar::DrawBoundingBox(UCanvas* Canvas, APawn* Target)
 
 void cRadar::DrawPlayerOnRadar (UCanvas* Canvas, APawn *Target)
 {
-    if ( !b3DRadar ) return;
+	if ( !b3DRadar ) return;
 
 	FVector X,Y,Z,D,E,top,bottom;;
 	FColor Color = GetTeamColor(Target);
@@ -109,29 +109,47 @@ void cRadar::DrawPlayerOnRadar (UCanvas* Canvas, APawn *Target)
 	D = Target->Location - MyCameraLocation;
 	E = D /= D.Size();
 
-	if(Dot(E,X) <= cos(90 * PI / 180))
-	    return;
+	if (Dot(E, X) <= cos(90 * PI / 180))
+	{
+		return;
+	}
 
 	DrawBoundingBox(Canvas,Target);
 }
 
-void inline cRadar::DrawPlayer2DRadar (UCanvas* Canvas, APawn* Target)
+void inline cRadar::DrawPlayer2DRadar (UCanvas* Canvas, APawn* Target, float PosX_, float PosY_, float Width, float Height)
 {
-    if ( !b2DRadar ) return;
+	// 10, 177, 134, 137
+	static float borderGap = 8.0f;
 
-    FVector X,Y,Z,D;
-    FRotator R = MyCameraRotation + FRotator(0,16384,0);
-    R.Roll = 0;
-    R.Pitch = 0;
-    GetAxes(R, X, Y, Z);
-    D = (Target->Location - MyCameraLocation);
-    D.Z = 0;
+	if (!b2DRadar)
+	{
+		return;
+	}
+	
+	FVector X,Y,Z,D;
+	FRotator R = MyCameraRotation + FRotator(0, 16384, 0);
+	R.Roll = 0;
+	R.Pitch = 0;
 
-    int origPosX = + 75, origPosY = + 245;
+	GetAxes(R, X, Y, Z);
+	
+	D = (Target->Location - MyCameraLocation);
+	D.Z = 0;
+	
+	float origPosX = PosX_ + Width / 2.0f; // center x
+	float origPosY = PosY_ + Height / 2.0f; // center y
 
-	int PosX = origPosX + Dot(D, X) / ((60 * 48) / 60);
-	int PosY = origPosY + Dot(D, Y) / ((60 * 48) / 60);
+	float xRadarCoordinate = (Width - 2.0f * borderGap) / 2;
+	float yRadarCoordinate = (Height - 2.0f * borderGap) / 2;
 
+	//X = X * xRadarCoordinate;
+	//Y = Y * yRadarCoordinate;
+
+	float PosX = origPosX + Dot(D, X) / (D.Size2D()) * xRadarCoordinate;
+	float PosY = origPosY + Dot(D, Y) / (D.Size2D()) * yRadarCoordinate;
+
+	/*
 	if (PosX < + 17)
 		PosX = + 17;
 	if (PosX > + 133)
@@ -139,10 +157,10 @@ void inline cRadar::DrawPlayer2DRadar (UCanvas* Canvas, APawn* Target)
 	if (PosY < + 185)
 		PosY = + 185;
 	if (PosY > + 303)
-		PosY = + 303;
+		PosY = + 303;*/
 
 	Canvas->Color = GetTeamColor(Target);
 
-	DrawRec(Canvas,PosX,PosY, 4, 4, WhiteTexture,FColor(0,0,0));
-	DrawRec(Canvas,PosX + 1, PosY + 1, 2, 2, WhiteTexture,Canvas->Color);
+	DrawRec(Canvas, PosX, PosY, 4 * Scale, 4 * Scale, WhiteTexture, FColor(0,0,0));
+	DrawRec(Canvas, PosX + 1, PosY + 1, 2 * Scale, 2 * Scale, WhiteTexture, Canvas->Color);
 }

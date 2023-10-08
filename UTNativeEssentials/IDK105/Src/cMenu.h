@@ -9,7 +9,7 @@ public:
 	~cMenu();
     void DrawSettings (UCanvas*Canvas);
 	void DrawBox (UCanvas* Canvas, float PosX, float PosY, float Width, float Height);
-	void inline DrawRadarMenu (UCanvas* Canvas);
+	void inline DrawRadarMenu (UCanvas* Canvas, float PosX, float PosY, float Width, float Height);
 	void MyInfos (UCanvas* Canvas);
 };
 
@@ -164,16 +164,20 @@ void cMenu::DrawSettings (UCanvas*Canvas)
 
 void cMenu::DrawBox (UCanvas* Canvas, float PosX, float PosY, float Width, float Height )
 {
-	DrawRec(Canvas,PosX,PosY,Width,Height,WhiteTexture,FColor(67,75,86));
+	DrawRec(Canvas, PosX, PosY, Width, Height, WhiteTexture, FColor(67,75,86));
 
-	DrawRec(Canvas,PosX-2,PosY-2,Width+3,2,WhiteTexture,FColor(0,0,0));
-	DrawRec(Canvas,PosX+Width,PosY-2,2,Height+3,WhiteTexture,FColor(0,0,0));
-	DrawRec(Canvas,PosX-2,PosY-2,2,Height+3,WhiteTexture,FColor(0,0,0));
-	DrawRec(Canvas,PosX-2,PosY+Height,Width+3,2,WhiteTexture,FColor(0,0,0));
+	DrawRec(Canvas, PosX-2, PosY-2,Width+3 ,2, WhiteTexture, FColor(0,0,0));
+	DrawRec(Canvas, PosX+Width, PosY-2, 2, Height+3, WhiteTexture, FColor(0,0,0));
+	DrawRec(Canvas, PosX-2, PosY-2,2,Height+3, WhiteTexture, FColor(0,0,0));
+	DrawRec(Canvas, PosX-2, PosY+Height,Width+3, 2, WhiteTexture, FColor(0,0,0));
 }
 
-void inline cMenu::DrawRadarMenu (UCanvas* Canvas)
+void inline cMenu::DrawRadarMenu (UCanvas* Canvas, float PosX, float PosY, float Width, float Height)
 {
-	DrawRec(Canvas, + 77, + 185, 1, 122, WhiteTexture, FColor(180,180,180));
-	DrawRec(Canvas, + 18, + 246, 118, 1, WhiteTexture, FColor(180,180,180));
+	// 10, 177, 134, 137
+
+	static float borderGap = 8.0f;
+
+	DrawRec(Canvas, PosX + Width / 2.0f, PosY + borderGap, 1, Height - 2.0f * borderGap, WhiteTexture, FColor(180, 180, 180));
+	DrawRec(Canvas, PosX + borderGap, PosY + Height / 2.0f, Width - 2.0f * borderGap, 1, WhiteTexture, FColor(180, 180, 180));
 }

@@ -263,6 +263,9 @@ enum EWEAPON
 };
 EWEAPON			MyWeapon		= WP_None;
 
+/**
+ * @breif In game configurables and switches for tweaking
+ */
 bool bHook    = true;
 bool b3DRadar = true;
 bool b2DRadar = true;
@@ -274,18 +277,22 @@ bool bBotShooting = false;
 bool bValidAim	= false;
 bool bAutoFire	= true;
 int  bAutoAim	= 0;
+float Scale = 1.0f;
 
+/**
+ * @brief Global Variables
+ */
 FRotator BestRotation = FRotator(0,0,0);
 FVector	 BestLocation = FVector (0,0,0);
-bool block = false;
 
+bool block = false;
 bool bInit;
 
 class HookClass
 {
-	public:
-		HookClass();
-		~HookClass();
+public:
+	HookClass();
+	~HookClass();
 
 class cRadar * cR;
 class cMenu  * cM;
@@ -356,17 +363,25 @@ float inline Dot (const FVector& V1, const FVector& V2)
 
 void GetAxes (FRotator R, FVector &X, FVector &Y, FVector &Z)
 {
-    X = R.Vector();
+	X = R.Vector();
 	X.Normalize();
+
 	R.Yaw += 16384;
+
 	FRotator R2 = R;
 	R2.Pitch = 0.f;
+	
 	Y = R2.Vector();
+	
+	//Y.Z = 0.f;
 	Y.Normalize();
-	Y.Z = 0.f;
+	
 	R.Yaw -= 16384;
 	R.Pitch += 16384;
+	
 	Z = R.Vector();
+	
+	//Z.Z = 0.f;
 	Z.Normalize();
 }
 

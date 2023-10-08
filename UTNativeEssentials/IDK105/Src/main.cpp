@@ -74,58 +74,67 @@ void log_add(const char* fmt, ...)
 
 void Init (UCanvas* Canvas)
 {
-    if (bInit) return;
+	if (bInit) return;
 
-	LoadTexture(WhiteTexture,	"UWindow.WhiteTexture");
+	LoadTexture(WhiteTexture, "UWindow.WhiteTexture");
 
 	bInit = true;
 }
 
+// Windows specific
 void CheckKeys (UCanvas* Canvas)
 {
-    if (GetAsyncKeyState(VK_NUMPAD0)&(1==1))
+	if (GetAsyncKeyState(VK_NUMPAD0) & 0x01)
 	{
 		bHook = !bHook;
 	}
-    else if(GetAsyncKeyState(VK_NUMPAD1)&(1==1))
+	else if (GetAsyncKeyState(VK_NUMPAD1) & 0x01)
 	{
-	    (bAutoAim==2)?(bAutoAim=0):(bAutoAim++);
+		(bAutoAim==2)?(bAutoAim=0):(bAutoAim++);
 	}
-    else if (GetAsyncKeyState(VK_NUMPAD2)&(1==1))
+	else if (GetAsyncKeyState(VK_NUMPAD2) & 0x01)
 	{
-        bAutoFire = !bAutoFire;	
+		bAutoFire = !bAutoFire;	
 	}
-    else if (GetAsyncKeyState(VK_NUMPAD3)&(1==1))
+	else if (GetAsyncKeyState(VK_NUMPAD3) & 0x01)
 	{
-	    bTrigger = !bTrigger;	
+		bTrigger = !bTrigger;	
 	}
-    else if (GetAsyncKeyState(VK_NUMPAD4)&(1==1))
+	else if (GetAsyncKeyState(VK_NUMPAD4) & 0x01)
 	{
-        b3DRadar = !b3DRadar;	
+		b3DRadar = !b3DRadar;	
 	}
-    else if (GetAsyncKeyState(VK_NUMPAD5)&(1==1))
+	else if (GetAsyncKeyState(VK_NUMPAD5) & 0x01)
 	{
-	    b2DRadar = !b2DRadar;	
+		b2DRadar = !b2DRadar;	
 	}
-	else if (GetAsyncKeyState(VK_NUMPAD6)&(1==1))
+	else if (GetAsyncKeyState(VK_NUMPAD6) & 0x01)
 	{
-        bHealthbars = !bHealthbars;	
+		bHealthbars = !bHealthbars;	
 	}
-	else if (GetAsyncKeyState(VK_NUMPAD7)&(1==1))
+	else if (GetAsyncKeyState(VK_NUMPAD7) & 0x01)
 	{
-        bSettings = !bSettings;	
+		bSettings = !bSettings;	
 	}
-    else if (GetAsyncKeyState(VK_NUMPAD8)&(1==1))
+	else if (GetAsyncKeyState(VK_NUMPAD8) & 0x01)
 	{
-	    bInfo = !bInfo;
+		bInfo = !bInfo;
+	}
+	else if (GetAsyncKeyState(VK_HOME) & 0x01)
+	{
+		Scale += 0.1f;
+	}
+	else if (GetAsyncKeyState(VK_END) & 0x01)
+	{
+		Scale -= 0.1f;
 	}
 }
 
 void GetCameraLocation (FVector &InputLocation, FRotator &InputRotation)
 {
-    struct APlayerPawn_eventPlayerCalcView_Parms
+	struct APlayerPawn_eventPlayerCalcView_Parms
 	{
-	    class AActor* ViewActor;
+		class AActor* ViewActor;
 		FVector CameraLocation;
 		FRotator CameraRotation;
 	};
@@ -161,8 +170,8 @@ void inline PawnIterator(FSceneNode* FS)
 
 	if(b2DRadar)
 	{
-		Hook.cM->DrawBox(Canvas,10,177,134,137);
-		Hook.cM->DrawRadarMenu(Canvas);
+		Hook.cM->DrawBox(Canvas, 10, 177.0f, 134.0f * Scale, 137.0f * Scale);
+		Hook.cM->DrawRadarMenu(Canvas, 10, 177.0f, 134.0f * Scale, 137.0f * Scale);
 	}
 
 	Deltatime = ((Me->Level->TimeSeconds - LastTimerCheck) / Me->Level->TimeDilation);
@@ -218,7 +227,7 @@ void inline PawnIterator(FSceneNode* FS)
 		if (ValidTarget(Target))
 		{
 			Hook.cR->DrawPlayerOnRadar(Canvas, Target);
-			Hook.cR->DrawPlayer2DRadar(Canvas, Target);
+			Hook.cR->DrawPlayer2DRadar(Canvas, Target, 10, 177.0f, 134.0f * Scale, 137.0f * Scale);
 
 			Hook.cA->Trigger(Target);
 
@@ -267,13 +276,13 @@ void MyPostRender (FSceneNode* FS)
 
 	if(bSettings)
 	{
-		Hook.cM->DrawBox(Canvas,10,340,134,137);
+		Hook.cM->DrawBox(Canvas, 10, 177.0f + 137.0f * Scale + 25, 134.0f * Scale, 137.0f * Scale);
 		Hook.cM->DrawSettings(Canvas);
 	}
 
 	if(bInfo)
 	{
-		Hook.cM->DrawBox(Canvas,10,501,134,137);
+		Hook.cM->DrawBox(Canvas, 10, 177.0f + 137.0f * Scale + 137.0f * Scale + 50, 134.0f * Scale, 137.0f * Scale);
 		Hook.cM->MyInfos(Canvas);
 	}
 }
