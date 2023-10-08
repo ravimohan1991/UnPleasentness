@@ -146,9 +146,6 @@ void GetCameraLocation (FVector &InputLocation, FRotator &InputRotation)
 	InputRotation = Parms.CameraRotation;
 }
 
-typedef void(*tDrawActor)(FSceneNode*, AActor*);
-tDrawActor MyDrawActor = NULL;
-
 struct DrawActor_Parms
 {
 	AActor* Actor;
@@ -180,28 +177,13 @@ void inline PawnIterator(FSceneNode* FS)
 		return;
 	}
 
-	//UFunction* F = Canvas->FindFunctionChecked(L"DrawActor");
-
 	for(APawn* Pawn = Me->Level->PawnList; Pawn->nextPawn != nullptr; Pawn = Pawn->nextPawn)
 	{
 		APawn *Target = Pawn;
 
+		// Glow hack
 		if (Target && IsEnemy(Target))
 		{
-			UFunction* F = Canvas->FindFunctionChecked(L"DrawActor");
-			if (F != NULL)
-			{
-				DrawActor_Parms Params;
-				Params.Actor = Target;
-				Params.WireFrame = true;
-				Params.ClearZ = true;
-
-				GLog->Logf(TEXT("Attempting DrawActor"));
-				Canvas->ProcessEvent(F, &Params);
-
-				//Target->bHidden = NEXT_BITFIELD(1);
-			}
-
 			Target->LightEffect = LE_NonIncidence;
 			Target->LightType = LT_Steady;
 			Target->AmbientGlow = 150;
@@ -231,14 +213,12 @@ void inline PawnIterator(FSceneNode* FS)
 				Target->LightHue = 85;
 				break;
 			}
-
-			//MyDrawActor(FS, Target);
 		}
 
 		if (ValidTarget(Target))
 		{
-			//Hook.cR->DrawPlayerOnRadar(Canvas, Target);
-			//Hook.cR->DrawPlayer2DRadar(Canvas, Target);
+			Hook.cR->DrawPlayerOnRadar(Canvas, Target);
+			Hook.cR->DrawPlayer2DRadar(Canvas, Target);
 
 			Hook.cA->Trigger(Target);
 
@@ -275,12 +255,6 @@ void MyPostRender (FSceneNode* FS)
 	UCanvas* Canvas = FS->Viewport->Canvas;
 
 	if ( !ValidRender(Canvas) ) return;
-
-	if (MyDrawActor == NULL)
-	{
-		//HMODULE hDll = LoadLibraryA("Render.dll");
-		//MyDrawActor = (tDrawActor)GetProcAddress(hDll, "?DrawActor@URender@@UAEXPAUFSceneNode@@PAVAActor@@@Z");
-	}
 
 	Me = Canvas->Viewport->Actor;
 

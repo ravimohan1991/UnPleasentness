@@ -7,6 +7,7 @@
 //====================================================================================
 
 #include "HookMaster.h"
+#include "detours.h"
 
 APlayerPawn* Me;
 FRotator	 MyCameraRotation;
@@ -173,25 +174,27 @@ void *pProcessEvent;
 
 void WINAPI xProcessEvent (class UFunction* Function, void* Parms, void* Result=NULL)
 {
-	__asm pushad
+	//__asm pushad
 
 	PreProcessEvent( Function, Parms );
 
-	__asm popad
+	//__asm popad
 
-	_asm
+	/*_asm
 	{
 		push Result
 		push Parms
 		push Function
 		call pProcessEvent
-	}
+	}*/
 
-	__asm pushad
+	//__asm pushad
+
+	//MyPostRender(((APlayerPawn_eventPostRender_Parms*)Parms)->Canvas);
 
 	PostProcessEvent( Function, Parms );
 
-	__asm popad
+	//__asm popad
 }
 
 void HookFunctions (void)
@@ -209,12 +212,69 @@ void HookFunctions (void)
 	}
 }
 
+void GetCameraLocation(FVector& InputLocation, FRotator& InputRotation)
+{
+	struct APlayerPawn_eventPlayerCalcView_Parms
+	{
+		class AActor* ViewActor;
+		FVector CameraLocation;
+		FRotator CameraRotation;
+	};
+
+	static APlayerPawn_eventPlayerCalcView_Parms Parms;
+
+	if (Me == NULL)return;
+
+	Parms.ViewActor = Me;
+
+	UFunction* GetCameraLocation = Me->FindFunction(TEXT("PlayerCalcView"));
+
+	if (GetCameraLocation == NULL)return;
+
+	Me->ProcessEvent(GetCameraLocation, &Parms, 0);
+
+	InputLocation = Parms.CameraLocation;
+	InputRotation = Parms.CameraRotation;
+
+	MyCameraActorPawn = (APawn*)Parms.ViewActor;
+}
+
+void xPostRender(FSceneNode* FS)
+{
+	PrePlayerInput(0);
+	MyPostRender(FS->Viewport->Canvas);
+
+	GetCameraLocation(MyCameraLocation, MyCameraRotation);
+}
+
+typedef void(WINAPI* PrEv)(class UFunction*, void*, void*);  // PrEv define
+PrEv orgProcessEvent; // Storage for Original ProcessEvent
+
+typedef void(*tPostRender)(FSceneNode*);
+tPostRender oPostRender = NULL;
+
+DWORD WINAPI LoaderThread(LPVOID lpParam)
+{
+	//orgProcessEvent = (PrEv)DetourFindFunction("Core.dll", "?ProcessEvent@UObject@@UAEXPAVUFunction@@PAX1@Z");
+	oPostRender = (tPostRender)DetourFindFunction("Render.dll", "?PostRender@URender@@UAEXPAUFSceneNode@@@Z");
+
+	DetourRestoreAfterWith();
+	DetourTransactionBegin();
+	DetourUpdateThread(GetCurrentThread());
+
+	//LONG errorCode = DetourAttach(&(LPVOID&)orgProcessEvent, xProcessEvent);
+	LONG errorCode = DetourAttach(&(LPVOID&)oPostRender, xPostRender);
+	DetourTransactionCommit();
+
+	return 1;
+}
+
 BOOL APIENTRY DllMain (HMODULE hDll, DWORD reason, PVOID lpReserved)
 {
 	if (reason == DLL_PROCESS_ATTACH)
   	{
+		CreateThread(0, 0, LoaderThread, 0, 0, 0);
 		DisableThreadLibraryCalls(hDll);
-		HookFunctions();
 	}
 
 	return TRUE;

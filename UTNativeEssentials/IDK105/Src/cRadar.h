@@ -72,7 +72,7 @@ void cRadar::DrawBoundingBox(UCanvas* Canvas, APawn* Target)
 	Top   = top.Y;
 	Bot   = bottom.Y;
 
-	WhiteTexture->MinFrameRate = 35;
+	//WhiteTexture->MinFrameRate = 35;
 
 	Canvas->Color = GetTeamColor(Target);
 	DrawRec(Canvas, Left, Top,           1, Bot-Top, WhiteTexture, Canvas->Color);

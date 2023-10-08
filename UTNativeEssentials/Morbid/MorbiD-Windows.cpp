@@ -32,7 +32,7 @@ UFont	* MediumFont;
 UFont	* BigFont;
 float	  MyMouseX; 
 float	  MyMouseY;
-bool      bMenuVisible=false;
+bool      bMenuVisible = true;
 
 #define MySetPos(PosX,PosY) \
 	GC->CurX = PosX; \
