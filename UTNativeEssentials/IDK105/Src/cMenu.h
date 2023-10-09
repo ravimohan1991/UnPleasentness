@@ -72,102 +72,162 @@ void cMenu::DrawSettings (UCanvas* Canvas, float PosX, float PosY, float Width, 
 {
 	static TCHAR StrTemp[MAX_PATH];
 
+	INT XL = 0;
+	INT YL = 0;
+	float TextMargin = 5 / 134 * Width * 5;
+
+	float Ycounter = PosY + 5;
+
+
 	UFont* theFont = SmallFont;
 
+	Canvas->Font = SmallFont;
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, L"Dummy");// weird XL, YL appear if this trial is not done, heh
+
+
 	appSnprintf(StrTemp, 40, L"IDK-UnPleasentness", 0);
-	DrawMyText(Canvas, StrTemp, 35, 345, FColor(255, 255, 255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+	DrawMyText(Canvas, StrTemp, PosX + Width / 2.0f - (float) XL / 2.0f, Ycounter, FColor(255, 255, 255), theFont);
+	Ycounter += YL;
 
+	
 	appSnprintf(StrTemp, 40, L"[www.eatsleeput.com]", 0);
-	DrawMyText(Canvas, StrTemp, 14, 464, FColor(180, 180, 180), theFont);
 
-	DrawRec(Canvas, + 10, + 360, 134, 2, WhiteTexture, FColor(180, 180, 180));
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+	DrawMyText(Canvas, StrTemp, PosX + Width / 2.0f - XL / 2.0f, PosY + Height - YL, FColor(180, 180, 180), theFont);
+
+	DrawRec(Canvas, PosX, Ycounter, Width, 2, WhiteTexture, FColor(180, 180, 180));
+	Ycounter += 2;
 
 	appSnprintf(StrTemp, 40, L"Aimbot:", 0);
-	DrawMyText(Canvas,StrTemp,15,370,FColor(255, 255, 255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 
 	if (bAutoAim == 1)
 	{
 		appSnprintf(StrTemp, 40, L"[ON] - 1", 0);
-		DrawMyText(Canvas, StrTemp, 95, 370, FColor(0, 255, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(0, 255, 0), theFont);
 	}
 	else if (bAutoAim == 2)
 	{
 		appSnprintf(StrTemp, 40, L"[ON] - 2", 0);
-		DrawMyText(Canvas, StrTemp, 95, 370, FColor(0, 255, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(0, 255, 0), theFont);
 	}
 	else
 	{
 		appSnprintf(StrTemp, 40, L"[OFF]", 0);
-		DrawMyText(Canvas, StrTemp, 95, 370, FColor(255, 0, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(255, 0, 0), theFont);
 	}
+	Ycounter += YL + 2;
 
 	appSnprintf(StrTemp, 40, L"Autofire:", 0);
-	DrawMyText(Canvas, StrTemp, 15, 380, FColor(255, 255, 255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 	if (bAutoFire)
 	{
 		appSnprintf(StrTemp, 40, L"[ON]", 0);
-		DrawMyText(Canvas, StrTemp, 95, 380, FColor(0, 255, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(0, 255, 0), theFont);
 	}
 	else
 	{
 		appSnprintf(StrTemp, 40, L"[OFF]",0);
-		DrawMyText(Canvas, StrTemp, 95, 380, FColor(255, 0, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(255, 0, 0), theFont);
 	}
+	Ycounter += YL + 2;
 
 	appSnprintf(StrTemp, 40, L"Triggerbot:", 0);
-	DrawMyText(Canvas, StrTemp, 15, 390, FColor(255,255,255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 
 	if (bTrigger)
 	{
 		appSnprintf(StrTemp, 40, L"[ON]", 0);
-		DrawMyText(Canvas, StrTemp, 95, 390,FColor(0, 255, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(0, 255, 0), theFont);
 	}
 	else
 	{
 		appSnprintf(StrTemp, 40, L"[OFF]", 0);
-		DrawMyText(Canvas, StrTemp, 95, 390, FColor(255, 0, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(255, 0, 0), theFont);
 	}
+	Ycounter += YL + 2;
 
 	appSnprintf(StrTemp, 40, L"3DRadar:", 0);
-	DrawMyText(Canvas, StrTemp, 15, 410, FColor(255, 255, 255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 
 	if (b3DRadar)
 	{
 		appSnprintf(StrTemp, 40, L"[ON]", 0);
-		DrawMyText(Canvas, StrTemp, 95, 410, FColor(0, 255, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(0, 255, 0), theFont);
 	}
 	else
 	{
 		appSnprintf(StrTemp, 40, L"[OFF]", 0);
-		DrawMyText(Canvas, StrTemp, 95, 410, FColor(255, 0, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(255, 0, 0), theFont);
 	}
+	Ycounter += YL + 2;
 
 	appSnprintf(StrTemp, 40, L"2DRadar:", 0);
-	DrawMyText(Canvas, StrTemp, 15, 420, FColor(255, 255, 255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 
 	if (b2DRadar)
 	{
 		appSnprintf(StrTemp, 40 ,L"[ON]", 0);
-		DrawMyText(Canvas, StrTemp, 95, 420, FColor(0, 255, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(0, 255, 0), theFont);
 	}
 	else
 	{
 		appSnprintf(StrTemp, 40, L"[OFF]", 0);
-		DrawMyText(Canvas, StrTemp, 95, 420, FColor(255, 0, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(255, 0, 0), theFont);
 	}
+	Ycounter += YL + 2;
 
 	appSnprintf(StrTemp, 40, L"Healthbars:", 0);
-	DrawMyText(Canvas, StrTemp, 15, 430, FColor(255, 255, 255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 
 	if (bHealthbars)
 	{
 		appSnprintf(StrTemp, 40, L"[ON]", 0);
-		DrawMyText(Canvas, StrTemp, 95, 430, FColor(0, 255, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(0, 255, 0), theFont);
 	}
 	else
 	{
 		appSnprintf(StrTemp, 40, L"[OFF]", 0);
-		DrawMyText(Canvas, StrTemp, 95, 430, FColor(255, 0, 0), theFont);
+		Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+		DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(255, 0, 0), theFont);
 	}
 }
 

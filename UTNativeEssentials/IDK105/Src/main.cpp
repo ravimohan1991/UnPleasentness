@@ -77,6 +77,9 @@ void Init (UCanvas* Canvas)
 	if (bInit) return;
 
 	LoadTexture(WhiteTexture, "UWindow.WhiteTexture");
+	
+	// some loading sequence for dynamic fonts.
+	
 	LoadFont(SmallFont, "LadderFonts.UTLadder22");
 
 	bInit = true;

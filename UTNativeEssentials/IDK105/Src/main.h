@@ -224,6 +224,8 @@ enum ETextureFormat
 #include "UnRender.h"
 #include "UnCon.h"
 
+//#include "cDynamicFont.h"
+
 int ReDirectFunction(const char* strDllName, const char* strFunctionName, DWORD newFuncAddy);
 void log_add(const char* fmt, ...); //logging
 void pPostRender();
@@ -322,6 +324,8 @@ if (Font == NULL) \
 	Font = (UFont*)UFont::StaticLoadObject(UFont::StaticClass(), NULL, TEXT(Name), NULL, LOAD_NoWarn, NULL); \
 	if (Font != NULL) Font->SetFlags(RF_Keep); \
 } \
+
+//static class UFont* SmallFont = NULL;
 
 #define ValidRender(Canvas) ( \
 	(Canvas != NULL) && \

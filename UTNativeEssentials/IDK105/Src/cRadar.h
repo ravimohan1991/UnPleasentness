@@ -34,7 +34,7 @@ void inline cRadar::DrawHealthBar (UCanvas* Canvas, float PosX, float PosY, int 
 
 FVector cRadar::WorldToScreen (UCanvas* Canvas, FVector WorldLocation)
 {
-    FVector X,Y,Z,D,Out;
+	FVector X,Y,Z,D,Out;
 	GetAxes(MyCameraRotation,X,Y,Z);
 	D = WorldLocation - MyCameraLocation;
 	Out.X = (Canvas->ClipX/2)+( Dot(D,Y))*((Canvas->ClipX/2)/tan(Me->FovAngle*PI/360))/Dot(D,X);
@@ -152,12 +152,12 @@ void inline cRadar::DrawPlayer2DRadar (UCanvas* Canvas, APawn* Target, float Pos
 	float origPosX = PosX_ + Width / 2.0f; // center x
 	float origPosY = PosY_ + Height / 2.0f; // center y
 
-	float xRadarCoordinate = (Width - 2.0f * borderGap) / 2 * (D.Size2D() / largestTargetD);
-	float yRadarCoordinate = (Height - 2.0f * borderGap) / 2 * (D.Size2D() / largestTargetD);
+	float xRadarLength = (Width - 2.0f * borderGap) / 2 * (D.Size2D() / largestTargetD);
+	float yRadarLength = (Height - 2.0f * borderGap) / 2 * (D.Size2D() / largestTargetD);
 
 
-	float PosX = origPosX + Dot(D, X) / (D.Size2D()) * xRadarCoordinate;
-	float PosY = origPosY + Dot(D, Y) / (D.Size2D()) * yRadarCoordinate;
+	float PosX = origPosX + Dot(D, X) / (D.Size2D()) * xRadarLength;
+	float PosY = origPosY + Dot(D, Y) / (D.Size2D()) * yRadarLength;
 
 	Canvas->Color = GetTeamColor(Target);
 
