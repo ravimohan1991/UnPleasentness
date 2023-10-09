@@ -462,9 +462,9 @@ DWORD WINAPI MouseUp ( PVOID pParam )
 	return 0;
 }
 
-void DrawRec(UCanvas* Canvas,float ScreenX,float ScreenY,float Width,float Height, UTexture* Tex,FColor Color)
+void DrawRec(UCanvas* Canvas, float ScreenX, float ScreenY, float Width, float Height, UTexture* Tex, FColor Color)
 {
-    struct DrawRect_Parms
+	struct DrawRect_Parms
 	{
 		UTexture *Tex;
 		float X;
@@ -488,7 +488,7 @@ void DrawRec(UCanvas* Canvas,float ScreenX,float ScreenY,float Width,float Heigh
 		Canvas->CurY = ScreenY; 
 		Canvas->Color = Color;
 		Canvas->Style = 1;
-		Canvas->ProcessEvent(F,&Parms);
+		Canvas->ProcessEvent(F, &Parms);
 		Canvas->Style = TempStyle;
 		Canvas->Color = TempColor;
 	}

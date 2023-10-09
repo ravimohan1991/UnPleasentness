@@ -23,15 +23,16 @@ cRadar::~cRadar(){};
 void inline cRadar::DrawHealthBar (UCanvas* Canvas, float PosX, float PosY, int Health)
 {
 	float healthMeterAdjustment = 40 * Scale;
+	PosY = PosY - 9.5f * Scale;// hehe, what a value
 
-	DrawRec(Canvas, PosX - healthMeterAdjustment, PosY, 40 * Scale, 6 * Scale, WhiteTexture, FColor(0, 0, 0, 0));
-	DrawRec(Canvas,PosX - healthMeterAdjustment +1, PosY + 1, 38 * Scale, 4 * Scale, WhiteTexture, FColor(255, 255, 255, 255));
+	DrawRec(Canvas, PosX - healthMeterAdjustment, PosY, 40 * Scale, 6.0f * Scale, WhiteTexture, FColor(0, 0, 0, 0));
+	DrawRec(Canvas, PosX - healthMeterAdjustment + 1, PosY + 1, 38 * Scale, 4.0f * Scale, WhiteTexture, FColor(255, 255, 255, 255));
 
 	int Tmp = Min(int(Health * 2.55), 255);
 	Canvas->Color = FColor(255 - Tmp,Tmp,0);
 	Tmp = Min(int(Health * 0.38), 38);
 
-	DrawRec(Canvas, PosX - healthMeterAdjustment + 1, PosY + 1, Tmp * Scale, 4 * Scale, WhiteTexture, Canvas->Color);
+	DrawRec(Canvas, PosX - healthMeterAdjustment + 1, PosY + 1, Tmp * Scale, 4.0f * Scale, WhiteTexture, Canvas->Color);
 }
 
 FVector cRadar::WorldToScreen (UCanvas* Canvas, FVector WorldLocation)

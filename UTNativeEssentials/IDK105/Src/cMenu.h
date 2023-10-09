@@ -106,7 +106,8 @@ void cMenu::MyInfos (UCanvas* Canvas, float PosX, float PosY, float Width, float
 
 	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 
-	Hook.cR->DrawHealthBar(Canvas, PosX + Width - TextMargin, Ycounter, Me->Health);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+	Hook.cR->DrawHealthBar(Canvas, PosX + Width - TextMargin, Ycounter + YL, Me->Health);
 
 	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
 	appSnprintf(StrTemp, 40, L"[www.eatsleeput.com]", 0);
