@@ -5,7 +5,7 @@
 class cRadar : public HookClass
 {
 protected:
-    FVector WorldToScreen (UCanvas* Canvas, FVector WorldLocation);
+	FVector WorldToScreen (UCanvas* Canvas, FVector WorldLocation);
 	void DrawBoundingBox(UCanvas* Canvas, APawn* Target);
 public:
 	cRadar();
@@ -22,14 +22,16 @@ cRadar::~cRadar(){};
 
 void inline cRadar::DrawHealthBar (UCanvas* Canvas, float PosX, float PosY, int Health)
 {
-	DrawRec(Canvas, PosX - 20, PosY - 20, 40, 6, WhiteTexture, FColor(0,0,0,0));
-	DrawRec(Canvas,PosX - 19, PosY - 19, 38, 4, WhiteTexture, FColor(255,255,255,255));
+	float healthMeterAdjustment = 40 * Scale;
+
+	DrawRec(Canvas, PosX - healthMeterAdjustment, PosY, 40 * Scale, 6 * Scale, WhiteTexture, FColor(0, 0, 0, 0));
+	DrawRec(Canvas,PosX - healthMeterAdjustment +1, PosY + 1, 38 * Scale, 4 * Scale, WhiteTexture, FColor(255, 255, 255, 255));
 
 	int Tmp = Min(int(Health * 2.55), 255);
 	Canvas->Color = FColor(255 - Tmp,Tmp,0);
 	Tmp = Min(int(Health * 0.38), 38);
 
-	DrawRec(Canvas, PosX - 19, PosY - 19, Tmp, 4, WhiteTexture, Canvas->Color);
+	DrawRec(Canvas, PosX - healthMeterAdjustment + 1, PosY + 1, Tmp * Scale, 4 * Scale, WhiteTexture, Canvas->Color);
 }
 
 FVector cRadar::WorldToScreen (UCanvas* Canvas, FVector WorldLocation)

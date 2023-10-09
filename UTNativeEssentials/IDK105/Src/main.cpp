@@ -290,7 +290,7 @@ void MyPostRender (FSceneNode* FS)
 	if(bInfo)
 	{
 		Hook.cM->DrawBox(Canvas, 10, 177.0f + 137.0f * Scale + 137.0f * Scale + 50, 134.0f * Scale, 137.0f * Scale);
-		Hook.cM->MyInfos(Canvas);
+		Hook.cM->MyInfos(Canvas, 10, 177.0f + 137.0f * Scale + 137.0f * Scale + 50, 134.0f * Scale, 137.0f * Scale);
 	}
 }
 

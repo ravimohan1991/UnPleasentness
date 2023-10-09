@@ -10,7 +10,7 @@ public:
     void DrawSettings (UCanvas*Canvas, float PosX, float PosY, float Width, float Height);
 	void DrawBox (UCanvas* Canvas, float PosX, float PosY, float Width, float Height);
 	void inline DrawRadarMenu (UCanvas* Canvas, float PosX, float PosY, float Width, float Height);
-	void MyInfos (UCanvas* Canvas);
+	void MyInfos (UCanvas* Canvas, float PosX, float PosY, float Width, float Height);
 };
 
 cMenu::cMenu() {};
@@ -18,54 +18,100 @@ cMenu::~cMenu(){};
 
 #endif _MENU_
 
-void cMenu::MyInfos (UCanvas* Canvas)
+void cMenu::MyInfos (UCanvas* Canvas, float PosX, float PosY, float Width, float Height)
 {
 	static TCHAR StrTemp[MAX_PATH];
 
+	INT XL = 0;
+	INT YL = 0;
+	float TextMargin = 5.0f / 134.0f * Width * 2.0f;
+
+	float Ycounter = PosY + 5;
+
 	UFont* theFont = SmallFont;
 
-	appSnprintf(StrTemp, 40, L"Self Information");
-	DrawMyText(Canvas, StrTemp, 28, 506, FColor(255, 255, 255), theFont);
+	Canvas->Font = SmallFont;
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, L"Dummy");// weird XL, YL appear if this trial is not done, heh
 
-	DrawRec(Canvas, +10, +521, 134, 2, WhiteTexture, FColor(180, 180, 180));
+	appSnprintf(StrTemp, 40, L"Self Information");
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+	DrawMyText(Canvas, StrTemp, PosX + Width / 2.0f - (float)XL / 2.0f, Ycounter, FColor(255, 255, 255), theFont);
+	Ycounter += YL;
+
+	DrawRec(Canvas, PosX, Ycounter, Width, 2, WhiteTexture, FColor(180, 180, 180));
+	Ycounter += 4;
 
 	appSnprintf(StrTemp, 40, L"%s", TEXT("Name:"));
-	DrawMyText(Canvas, StrTemp, 15, 531, FColor (255, 255, 255, 255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 
 	appSnprintf(StrTemp, 40, L"%s", Me->PlayerReplicationInfo->PlayerName);
-	DrawMyText(Canvas, StrTemp, 95, 531, FColor( 255,255,255,255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(255, 255, 255, 255), theFont);
+
+	Ycounter += YL + 2;
 
 	appSnprintf(StrTemp, 40, L"%s", TEXT("Kills:"));
-	DrawMyText(Canvas, StrTemp, 15, 541, FColor (255, 255, 255, 255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 
 	appSnprintf(StrTemp, 40, L"%.0f", Me->PlayerReplicationInfo->Score);
-	DrawMyText(Canvas, StrTemp, 95, 541, FColor( 255,255,255,255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(255, 255, 255, 255), theFont);
+
+	Ycounter += YL + 2;
 
 	appSnprintf(StrTemp, 40, L"%s", TEXT("Deaths:"));
-	DrawMyText(Canvas, StrTemp, 15, 551, FColor (255, 255, 255, 255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 
 	appSnprintf(StrTemp, 40, L"%.0f", Me->PlayerReplicationInfo->Deaths);
-	DrawMyText(Canvas, StrTemp, 95, 551, FColor( 255,255,255,255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(255, 255, 255, 255), theFont);
+
+	Ycounter += YL + 2;
 
 	appSnprintf(StrTemp, 40, L"%s", TEXT("Ping:"));
-	DrawMyText(Canvas, StrTemp, 15, 561, FColor (255, 255, 255, 255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 
 	appSnprintf(StrTemp, 40, L"%d" ,Me->PlayerReplicationInfo->Ping);
-	DrawMyText(Canvas, StrTemp, 95, 561, FColor( 255,255,255,255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(255, 255, 255, 255), theFont);
+
+	Ycounter += YL + 2;
 
 	appSnprintf(StrTemp, 40, L"%s", TEXT("ID:"));
-	DrawMyText(Canvas, StrTemp, 15, 571, FColor (255, 255, 255, 255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 
 	appSnprintf(StrTemp, 40, L"%d",Me->PlayerReplicationInfo->PlayerID);
-	DrawMyText(Canvas, StrTemp, 95, 571, FColor( 255,255,255,255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, PosX + Width - TextMargin - XL, Ycounter, FColor(255, 255, 255, 255), theFont);
+
+	Ycounter += YL + 2;
 
 	appSnprintf(StrTemp, 40, L"%s", TEXT("Health:"));
-	DrawMyText(Canvas, StrTemp, 15, 591, FColor (255, 255, 255, 255), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
 
-	Hook.cR->DrawHealthBar(Canvas, 115, 613, Me->Health);
+	DrawMyText(Canvas, StrTemp, PosX + TextMargin, Ycounter, FColor(255, 255, 255), theFont);
 
+	Hook.cR->DrawHealthBar(Canvas, PosX + Width - TextMargin, Ycounter, Me->Health);
+
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
 	appSnprintf(StrTemp, 40, L"[www.eatsleeput.com]", 0);
-	DrawMyText(Canvas, StrTemp, 14, 625, FColor(180,180,180), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+	DrawMyText(Canvas, StrTemp, PosX + Width / 2.0f - XL / 2.0f, PosY + Height - YL, FColor(180, 180, 180), theFont);
 }
 
 void cMenu::DrawSettings (UCanvas* Canvas, float PosX, float PosY, float Width, float Height)
@@ -74,30 +120,27 @@ void cMenu::DrawSettings (UCanvas* Canvas, float PosX, float PosY, float Width, 
 
 	INT XL = 0;
 	INT YL = 0;
-	float TextMargin = 5 / 134 * Width * 5;
+	float TextMargin = 5.0f / 134.0f * Width * 2.0f;
 
 	float Ycounter = PosY + 5;
-
 
 	UFont* theFont = SmallFont;
 
 	Canvas->Font = SmallFont;
 	Canvas->WrappedStrLenf(SmallFont, XL, YL, L"Dummy");// weird XL, YL appear if this trial is not done, heh
 
-
 	appSnprintf(StrTemp, 40, L"IDK-UnPleasentness", 0);
 	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
 	DrawMyText(Canvas, StrTemp, PosX + Width / 2.0f - (float) XL / 2.0f, Ycounter, FColor(255, 255, 255), theFont);
 	Ycounter += YL;
 
-	
 	appSnprintf(StrTemp, 40, L"[www.eatsleeput.com]", 0);
 
 	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
 	DrawMyText(Canvas, StrTemp, PosX + Width / 2.0f - XL / 2.0f, PosY + Height - YL, FColor(180, 180, 180), theFont);
 
 	DrawRec(Canvas, PosX, Ycounter, Width, 2, WhiteTexture, FColor(180, 180, 180));
-	Ycounter += 2;
+	Ycounter += 4;
 
 	appSnprintf(StrTemp, 40, L"Aimbot:", 0);
 	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
