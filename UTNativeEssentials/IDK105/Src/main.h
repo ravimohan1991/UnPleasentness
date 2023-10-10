@@ -5,7 +5,6 @@
 #include <windows.h>
 #include <stdio.h>
 #include <math.h>
-
 #include "detours.h"
 
 #define ENGINE_API __declspec(dllimport) 
@@ -275,6 +274,7 @@ bool bHealthbars = true;
 bool bTrigger = true;
 bool bInfo    = true;
 bool bSettings= true;
+bool bControls = true;
 bool bBotShooting = false;
 bool bValidAim	= false;
 bool bAutoFire	= true;

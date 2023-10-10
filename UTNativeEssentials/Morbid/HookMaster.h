@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <windows.h>
-#include <winbase.h>
+//#include <windows.h>
+//#include <winbase.h>
 #include <math.h>
 
 #ifdef __cplusplus

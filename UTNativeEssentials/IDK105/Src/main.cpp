@@ -23,6 +23,7 @@
 #include "cMenu.h"
 #include "cAimbot.h"
 #include "iostream"
+#include "MorbiD.h"
 
 void WINAPI MyProcessEvent(class UFunction* Function, void* Parms, void* Result = NULL);
 void WINAPI MProcessEvent(class UFunction* Function, void* Parms, void* Result = NULL);
@@ -33,6 +34,9 @@ PrEv orgProcessEvent; // Storage for Original ProcessEvent
 DWORD Bump; // Bump
 
 UCanvas* pCanvas; // Private Canvas
+
+//For configuring
+MorbidWindow ConfigurationWindow;
 
 /*
  *  FUNCTION: log_add(const char *fmt, ...)
@@ -263,6 +267,129 @@ void inline PawnIterator(FSceneNode* FS)
 	}
 }
 
+float setting1x, setting1y;
+float setting2x, setting2y;
+float setting3x, setting3y;
+float setting4x, setting4y;
+float setting5x, setting5y;
+float setting6x, setting6y;
+float setting7x, setting7y;
+float setting8x, setting8y;
+
+void DrawMorbiDConfigurationWindow(UCanvas* Canvas)
+{
+	float YPosTracker = 900.0f;
+	float XPosTracker = Canvas->ClipX - 134.0f * Scale - 10;
+	static float verticalGap = 30.0f;
+	float rightAlignment = 15.0f;
+
+	//Draw our configuration window
+	MWindow.DrawWindow(ConfigurationWindow, XPosTracker, YPosTracker, 134.0f * Scale, 2 * 134.0f * Scale, 1, false, TEXT("Settings Window"));
+	
+	YPosTracker += 56.0f;// temporary
+
+	//Add all the variety of checkboxes for the settings we have
+
+	// 1. bHook = !bHook;
+	MWindow.AddCheckBox(XPosTracker + rightAlignment, YPosTracker, bHook, true, TEXT("Aimbot"));
+	setting1x = XPosTracker + rightAlignment;
+	setting1y = YPosTracker;
+	YPosTracker += verticalGap;
+
+	// 2 bAutoAim (bAutoAim==2)?(bAutoAim=0):(bAutoAim++)
+	FColor autoColor;
+	switch (bAutoAim)
+	{
+	case 0:
+		autoColor = Color.White();
+		break;
+	case 1:
+		autoColor = Color.Blue();
+		break;
+	case 2:
+		autoColor = Color.Pink();
+		break;
+	}
+
+	MWindow.AddCheckBoxByColor(XPosTracker + rightAlignment, setting2y, autoColor, TEXT("Aimbot"));
+	setting2x = XPosTracker + rightAlignment;
+	setting2y = YPosTracker;
+	YPosTracker += verticalGap;
+
+	// 3. bTrigger = !bTrigger
+	MWindow.AddCheckBox(XPosTracker + rightAlignment, YPosTracker, bTrigger, true, TEXT("Trigger Bot"));
+	setting3x = XPosTracker + rightAlignment;
+	setting3y = YPosTracker;
+	YPosTracker += verticalGap;
+
+	// 4. b2DRadar = !b2DRadar;
+	MWindow.AddCheckBox(XPosTracker + rightAlignment, YPosTracker, b2DRadar, true, TEXT("Radar 2D"));
+	setting4x = XPosTracker + rightAlignment;
+	setting4y = YPosTracker;
+	YPosTracker += verticalGap;
+
+	// 5. b3DRadar = !b3DRadar;
+	MWindow.AddCheckBox(XPosTracker + rightAlignment, YPosTracker, b3DRadar, true, TEXT("Radar 3D"));
+	setting5x = XPosTracker + rightAlignment;
+	setting5y = YPosTracker;
+	YPosTracker += verticalGap;
+
+	// 6. bHealthbars = !bHealthbars;
+	MWindow.AddCheckBox(XPosTracker + rightAlignment, YPosTracker, bHealthbars, true, TEXT("Health Bars"));
+	setting6x = XPosTracker + rightAlignment;
+	setting6y = YPosTracker;
+	YPosTracker += verticalGap;
+
+	// 7. bSettings = !bSettings;
+	MWindow.AddCheckBox(XPosTracker + rightAlignment, YPosTracker, bSettings, true, TEXT("Settings"));
+	setting7x = XPosTracker + rightAlignment;
+	setting7y = YPosTracker;
+	YPosTracker += verticalGap;
+
+	// 8. bInfo = !bInfo;
+	MWindow.AddCheckBox(XPosTracker + rightAlignment, YPosTracker, bInfo, true, TEXT("Information"));
+	setting8x = XPosTracker + rightAlignment;
+	setting8y = YPosTracker;
+}
+
+void LookForMouseInput()
+{
+	float rightAlignment = 15.0f;
+
+	if (Mouse.CheckBoxClick(setting1x, setting1y, true))
+	{
+		bHook = !bHook;
+	}
+	else if (Mouse.CheckBoxClick(setting2x, setting2y, true))
+	{
+		(bAutoAim == 2) ? (bAutoAim = 0) : (bAutoAim++);
+	}
+	else if (Mouse.CheckBoxClick(setting3x, setting3y, true))
+	{
+		bTrigger = !bTrigger;
+	}
+	else if (Mouse.CheckBoxClick(setting4x, setting4y, true))
+	{
+		b2DRadar = !b2DRadar;
+	}
+	else if(Mouse.CheckBoxClick(setting5x, setting5y, true))
+	{
+		b3DRadar = !b3DRadar;
+	}
+	else if(Mouse.CheckBoxClick(setting6x, setting6y, true))
+	{
+		bHealthbars = !bHealthbars;
+	}
+	else if(Mouse.CheckBoxClick(setting7x, setting7y, true))
+	{
+		bSettings = !bSettings;
+	}
+	else if (Mouse.CheckBoxClick(setting8x, setting8y, true))
+	{
+		bInfo = !bInfo;
+	}
+}
+
 void MyPostRender (FSceneNode* FS)
 {
 	UCanvas* Canvas = FS->Viewport->Canvas;
@@ -278,6 +405,7 @@ void MyPostRender (FSceneNode* FS)
 	CheckKeys(Canvas);
 
 	Init(Canvas);
+	MWindow.MorbidWindowsMain(Canvas);
 		
 	if (!bHook ) return;
 
@@ -291,6 +419,12 @@ void MyPostRender (FSceneNode* FS)
 	{
 		Hook.cM->DrawBox(Canvas, 10, 177.0f + 137.0f * Scale + 137.0f * Scale + 50, 134.0f * Scale, 137.0f * Scale);
 		Hook.cM->MyInfos(Canvas, 10, 177.0f + 137.0f * Scale + 137.0f * Scale + 50, 134.0f * Scale, 137.0f * Scale);
+	}
+
+	if (bControls)
+	{
+		DrawMorbiDConfigurationWindow(Canvas);
+		LookForMouseInput();
 	}
 }
 
