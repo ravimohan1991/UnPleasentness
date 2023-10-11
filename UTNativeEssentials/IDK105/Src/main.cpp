@@ -311,7 +311,7 @@ void DrawMorbiDConfigurationWindow(UCanvas* Canvas)
 		break;
 	}
 
-	MWindow.AddCheckBoxByColor(XPosTracker + rightAlignment, setting2y, autoColor, TEXT("Aimbot"));
+	MWindow.AddCheckBoxByColor(XPosTracker + rightAlignment, setting2y, autoColor, TEXT("AutoAim"));
 	setting2x = XPosTracker + rightAlignment;
 	setting2y = YPosTracker;
 	YPosTracker += verticalGap;

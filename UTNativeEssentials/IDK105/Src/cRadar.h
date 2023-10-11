@@ -87,16 +87,22 @@ void cRadar::DrawBoundingBox(UCanvas* Canvas, APawn* Target)
 
 	F = Target->Location - MyCameraLocation;
 
+	INT XL, YL;
 	UFont* theFont = SmallFont;
 
+	Canvas->Font = SmallFont;
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, L"Test");
+
 	appSnprintf(StrTemp, 40, L"%s", Target->PlayerReplicationInfo->PlayerName);
-	DrawMyText(Canvas,StrTemp,Right + 3,Top,GetTeamColor(Target), theFont);
+	Canvas->WrappedStrLenf(SmallFont, XL, YL, StrTemp);
+
+	DrawMyText(Canvas, StrTemp, Right + 3, Top, GetTeamColor(Target), theFont);
 
 	appSnprintf(StrTemp, 40, L"H:%d", Target->Health);
-	DrawMyText(Canvas, StrTemp, Right + 3, Top + 8, GetTeamColor(Target), theFont);
+	DrawMyText(Canvas, StrTemp, Right + 3, Top + YL + 1, GetTeamColor(Target), theFont);
 
 	appSnprintf(StrTemp, 40, TEXT("D:%.0f"), F.Size() / 48);
-	DrawMyText(Canvas,StrTemp,Right + 3,Top + 16,GetTeamColor(Target), theFont);
+	DrawMyText(Canvas,StrTemp,Right + 3,Top + YL + YL + 2,GetTeamColor(Target), theFont);
 
 	if (bHealthbars)
 	{
