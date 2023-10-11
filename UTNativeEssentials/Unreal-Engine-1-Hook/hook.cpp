@@ -29,6 +29,10 @@
 #include <wx/filehistory.h>
 #include <wx/apptrait.h>
 
+#if defined HOOK_LINUX_PLATFORM || defined HOOK_MAC_PLATFORM
+#define HOOK_UNIX_PLATFORM
+#endif
+
 // Global Define for this translation unit
 
 #ifdef HOOK_MAC_PLATFORM
@@ -38,7 +42,7 @@ const char* AntigenFile = "dll";
 #endif
 
 #ifdef HOOK_MAC_PLATFORM
-const char* ProcessFile = "dylib";
+const char* ProcessFile = "unix process file";
 #elif HOOK_WINDOWS_PLATFORM
 const char* ProcessFile = "exe";
 #endif
@@ -136,6 +140,28 @@ KelvinFrame::KelvinFrame()
 	menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuHelp, "&Help");
 
+	// For memorizing recently opened processes
+	m_MenuProcessOpenRecent = new wxMenu();
+
+	// For memorizing recently opened antigen
+	m_AntigenOpenRecent = new wxMenu();
+
+
+	menuBar->Append(m_MenuProcessOpenRecent, "&Recent Process");
+	menuBar->Append(m_AntigenOpenRecent, "&Recent Antigen");
+
+	// Setup histories
+	m_ProcessHistory = new wxFileHistory();
+	m_ProcessHistory->UseMenu(m_MenuProcessOpenRecent);
+	m_ProcessHistory->AddFilesToMenu(m_MenuProcessOpenRecent);
+	//m_MenuProcessOpenRecent->Remove(*m_MenuProcessOpenRecent->GetMenuItems().begin()); //Removes "no recent file" message
+	m_ProcessHistory->Load(*MyConfigBase::Get());
+
+	m_HisAntigen = new wxFileHistory();
+	m_HisAntigen->UseMenu(m_AntigenOpenRecent);
+	//m_AntigenOpenRecent->Remove(*m_AntigenOpenRecent->GetMenuItems().begin());
+	m_HisAntigen->Load(*MyConfigBase::Get());
+
 	SetMenuBar(menuBar);
 
 	CreateStatusBar();
@@ -179,6 +205,7 @@ KelvinFrame::KelvinFrame()
 	//wxEventLoopBase *injectorLoop = wxAppTraits::CreateEventLoop();
 
 	Bind(wxEVT_MENU, &KelvinFrame::OnOpenFile, this, wxID_OPEN);
+	//Bind(wxEVT_MENU, &KelvinFrame::OnHistoricOpenFIle, this, ID_MemProcess);
 	Bind(wxEVT_MENU, &KelvinFrame::OnOpenProcess, this, ID_Process);
 	Bind(wxEVT_MENU, &KelvinFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &KelvinFrame::OnReset, this, wxID_RESET);
@@ -213,6 +240,14 @@ void KelvinFrame::OnExit(wxCommandEvent& event)
 	wxGetApp().ActivateInjectorLoop(false);
 	event.Skip(); // don't stop event, we still want window to close
 
+	m_ProcessHistory->Save(*MyConfigBase::Get());
+	m_HisAntigen->Save(*MyConfigBase::Get());
+
+	//delete (MyConfigBase::Get());
+
+	//delete m_ProcessHistory;
+	//delete m_HisAntigen;
+
 	HookOmega("");
 	Close(true);
 }
@@ -226,6 +261,40 @@ void KelvinFrame::OnAbout(wxCommandEvent& event)
 void KelvinFrame::OnHello(wxCommandEvent& event)
 {
 	wxLogMessage("Hello world from wxWidgets!");
+}
+
+void KelvinFrame::OnHistoricAntigenLoad(wxCommandEvent& event)
+{
+	char buffer[50];
+
+	wxSprintf(buffer, "%d", event.GetId());
+
+	LogMessage(wxString("Attempt open from memory ") + wxString(buffer));
+
+	wxString hisFile(m_ProcessHistory->GetHistoryFile(event.GetId() - wxID_FILE1));
+	{
+		if (!hisFile.empty())
+		{
+			OpenAntigenFile(hisFile);
+		}
+	}
+}
+
+void  KelvinFrame::OnHistoricOpenFile(wxCommandEvent& event)
+{
+	char buffer[50];
+
+	wxSprintf(buffer, "%d", event.GetId());
+
+	LogMessage(wxString("Attempt open from memory ") + wxString(buffer));
+
+	wxString hisFile(m_ProcessHistory->GetHistoryFile(event.GetId() - wxID_FILE1));
+	{
+		if (!hisFile.empty())
+		{
+			OpenProcessFile(hisFile);
+		}
+	}
 }
 
 void KelvinFrame::OnOpenProcess(wxCommandEvent& event)
@@ -242,11 +311,19 @@ void KelvinFrame::OnOpenProcess(wxCommandEvent& event)
 
 		wxFSFile* currentFile = currentFileSystem.OpenFile(filename);
 
+#ifdef HOOK_WINDOWS_PLATFORM
 		if (wxGetApp().GetStatus() == HookStatus::Ready && filename.find(ProcessFile) == wxString::npos)
+#elif defined HOOK_UNIX_PLATFORM
+		if (wxGetApp().GetStatus() == HookStatus::Ready && filename.find(".") != wxString::npos)
+#endif
 		{
 			LogMessage("Sorry, UE1Hook can't and won't work with unfamiliar \"processes\".");
 
-			static wxString correctionMessage = wxString("Please look for .") + wxString(ProcessFile);
+#ifdef HOOK_WINDOWS_PLATFORM
+		static wxString correctionMessage = wxString("Please look for .") + wxString(ProcessFile);
+#elif defined HOOK_UNIX_PLATFORM
+		static wxString correctionMessage = wxString("Please look for ") + wxString(ProcessFile);
+#endif
 
 			LogMessage(correctionMessage);
 		}
@@ -383,12 +460,50 @@ void KelvinFrame::OpenProcessFile(wxString filename)
 {
 	wxGetApp().OrStatus(HookStatus::ProcessKnown);
 
+	int found = -1;
+
+	//For loop updates Open Recent Menu properly.
+	for(unsigned counter = 0; counter < m_ProcessHistory->GetCount(); counter++)
+	{
+		if(m_ProcessHistory->GetHistoryFile(counter) == filename)
+		{
+			found = counter;
+		}
+	}
+
+	if(found != -1)
+	{
+		m_ProcessHistory->RemoveFileFromHistory(found);
+	}
+	m_ProcessHistory->AddFileToHistory(filename);
+	m_ProcessHistory->Save(*(MyConfigBase::Get()));
+	MyConfigBase::Get()->Flush();
+
 	wxGetApp().SetProcessName(filename);
 	LogMessage("Targetting the process " + filename);
 }
 
 void KelvinFrame::OpenAntigenFile(wxString filename)
 {
+	int found = -1;
+
+	//For loop updates Open Recent Menu properly.
+	for(unsigned counter = 0; counter < m_HisAntigen->GetCount(); counter++)
+	{
+		if(m_HisAntigen->GetHistoryFile(counter) == filename)
+		{
+			found = counter;
+		}
+	}
+
+	if(found != -1)
+	{
+		m_ProcessHistory->RemoveFileFromHistory(found);
+	}
+	m_HisAntigen->AddFileToHistory(filename);
+	m_HisAntigen->Save(*(MyConfigBase::Get()));
+	MyConfigBase::Get()->Flush();
+
 	wxGetApp().SetFileName(filename);
 
 	wxString tempoString(filename);
@@ -473,8 +588,8 @@ LogPanel::LogPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wx
 
 bool HookAlpha()
 {
-	// no hooking for now
-	return false;
+	// no hooking for now, bypass
+	return true;
 }
 
 void HookOmega(const wxString haltMessage)

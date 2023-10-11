@@ -63,7 +63,10 @@ enum HookStatus
  */
 enum
 {
-	ID_Process = 1				///< Process open menu entry
+	ID_Process = 1,				///< Process open menu entry
+	ID_MemProcess,				///< For remembering the previously opened processes
+	///<
+	ID_MemAntigen				///< For remembering the previoulsy opened antigen
 };
 
 /**
@@ -195,6 +198,9 @@ private:
 	 */
 	void OnOpenFile(wxCommandEvent& event);
 
+	void OnHistoricOpenFile(wxCommandEvent& event);
+	void OnHistoricAntigenLoad(wxCommandEvent& event);
+
 	/**
 	 * @brief Open executable process callback
 	 */
@@ -237,6 +243,10 @@ public:
 	 */
 	std::shared_ptr<InfoPanel> GetProcessInfoPanel() const { return m_ProcessInfoPanel; }
 
+	/**
+	 * @brief Getter for m_ProcessHistory
+	 */
+	wxFileHistory* GetFileHistory() const { return m_ProcessHistory; }
 private:
 	/**
 	 * @brief For managing varitey of panes or panels
@@ -270,7 +280,34 @@ private:
 	 * of the custom shared object code (in most of your language(s), DLL)
 	 */
 	std::shared_ptr<LogPanel> m_LogPanel;
+
+	/**
+	 * @brief Caching the process history
+	 */
+	wxFileHistory* m_ProcessHistory;
+
+	/**
+	 * @brief For display of recently used items (processes)
+	 */
+	wxMenu* m_MenuProcessOpenRecent;
+
+	/**
+	 * @brief Caching the antigen history
+	 */
+	wxFileHistory* m_HisAntigen;
+
+	/**
+	 * @brief For display of recently used items (dlls)
+	 */
+	wxMenu* m_AntigenOpenRecent;
+
+	DECLARE_EVENT_TABLE()
 };
+
+BEGIN_EVENT_TABLE(KelvinFrame, wxFrame)
+	EVT_MENU_RANGE(wxID_FILE1, wxID_FILE4, KelvinFrame::OnHistoricOpenFile)
+	EVT_MENU_RANGE(wxID_FILE5, wxID_FILE8, KelvinFrame::OnHistoricAntigenLoad)
+END_EVENT_TABLE()
 
 /// <summary>
 /// Class for panel with information of the target process
