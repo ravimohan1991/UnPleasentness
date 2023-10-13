@@ -198,7 +198,14 @@ private:
 	 */
 	void OnOpenFile(wxCommandEvent& event);
 
+	/**
+	 * @brief Recent process menu entry callback
+	 */
 	void OnHistoricOpenFile(wxCommandEvent& event);
+
+	/**
+	 * @brief Recent antigen (dll) menu entry callback
+	 */
 	void OnHistoricAntigenLoad(wxCommandEvent& event);
 
 	/**
@@ -301,7 +308,14 @@ private:
 	 */
 	wxMenu* m_AntigenOpenRecent;
 
+	/**
+	 * @brief A config file for storing recent process(es) ventured
+	 */
 	wxFileConfig* AppProcessConfigFile;
+
+	/**
+	 * @brief A config file for storing recent injection code used
+	 */
 	wxFileConfig* AppAntigenConfigFile;
 
 	DECLARE_EVENT_TABLE()
@@ -402,41 +416,3 @@ protected:
 	 */
 	wxTextCtrl* m_LogTextControl;
 };
-
-/// <summary>
-/// Wrapper for Portable vs Registry configbase.\n
-/// if there are wxHexEditor.cfg file exits on current path, wxHexEditor switches to portable version.
-/// </summary>
-class MyConfigBase
-{
-public:
-	static wxConfigBase* Get()
-	{
-		static wxFileConfig* AppConfigFile = new wxFileConfig("/store", "", "ue1Hook.cfg", "", wxCONFIG_USE_RELATIVE_PATH);
-		if (wxFileExists("ue1Hook.cfg"))
-		{
-			return AppConfigFile;
-		}
-		else
-		{
-			return wxConfigBase::Get();
-		}
-	}
-};
-/*
-class MyConfigAntigenBase
-{
-public:
-	static wxConfigBase* Get()
-	{
-		static wxFileConfig* AppConfigFile = new wxFileConfig("", "", "wxHexEditor.cfg", "", wxCONFIG_USE_RELATIVE_PATH);
-		if (wxFileExists("wxHexEditor.cfg"))
-		{
-			return AppConfigFile;
-		}
-		else
-		{
-			return wxConfigBase::Get();
-		}
-	}
-};*/
