@@ -122,7 +122,9 @@ void UE1HookApp::SetStatus(HookStatus status)
 KelvinFrame::KelvinFrame()
 	: wxFrame(nullptr, wxID_ANY, "UnPleasentness Injector")
 {
-	AppConfigFile = new wxFileConfig("UE1Hook", "", "UE1Hook.cfg", "", wxCONFIG_USE_LOCAL_FILE);
+	// For windows C:\Users\the_cowboy\AppData\Roaming
+	AppProcessConfigFile = new wxFileConfig("UE1Hook", "", "UE1HProcess.cfg", "", wxCONFIG_USE_LOCAL_FILE);
+	AppAntigenConfigFile = new wxFileConfig("UE1Hook", "", "UE1HAntigen.cfg", "", wxCONFIG_USE_LOCAL_FILE);
 
 	wxMenu* menuFile = new wxMenu;
 	menuFile->Append(wxID_OPEN, "&Load Antigen...\tCtrl-H",
@@ -140,7 +142,6 @@ KelvinFrame::KelvinFrame()
 
 	wxMenuBar* menuBar = new wxMenuBar;
 	menuBar->Append(menuFile, "&File");
-	menuBar->Append(menuHelp, "&Help");
 
 	// For memorizing recently opened processes
 	m_MenuProcessOpenRecent = new wxMenu();
@@ -154,15 +155,15 @@ KelvinFrame::KelvinFrame()
 	// Setup histories
 	m_ProcessHistory = new wxFileHistory(1, ID_MemProcess);
 	m_ProcessHistory->UseMenu(m_MenuProcessOpenRecent);
-	//m_ProcessHistory->AddFilesToMenu(m_MenuProcessOpenRecent);
-	//m_ProcessHistory->Load(*AppConfigFile);
+	m_ProcessHistory->AddFilesToMenu(m_MenuProcessOpenRecent);
+	m_ProcessHistory->Load(*AppProcessConfigFile);
 
 	m_HisAntigen = new wxFileHistory(1, ID_MemAntigen);
 	m_HisAntigen->UseMenu(m_AntigenOpenRecent);
-	//m_HisAntigen->AddFilesToMenu(m_AntigenOpenRecent);
-	//m_HisAntigen->Load(*MyConfigAntigenBase::Get());
-	//m_HisAntigen->Load(*AppConfigFile);
+	m_HisAntigen->AddFilesToMenu(m_AntigenOpenRecent);
+	m_HisAntigen->Load(*AppAntigenConfigFile);
 
+	menuBar->Append(menuHelp, "&Help");
 	SetMenuBar(menuBar);
 
 	CreateStatusBar();
@@ -198,7 +199,7 @@ KelvinFrame::KelvinFrame()
 				Center());
 
 		wxString tempStr;
-		AppConfigFile->Read(_T("LastPerspective"), &tempStr, wxEmptyString);
+
 		m_PaneManager->LoadPerspective(tempStr);
 		m_PaneManager->Update();
 	}
@@ -240,9 +241,6 @@ void KelvinFrame::OnExit(wxCommandEvent& event)
 {
 	wxGetApp().ActivateInjectorLoop(false);
 	event.Skip(); // don't stop event, we still want window to close
-
-	//m_ProcessHistory->Save(*MyConfigBase::Get());
-	//m_HisAntigen->Save(*MyConfigAntigenBase::Get());
 
 	HookOmega("");
 	Close(true);
@@ -537,25 +535,10 @@ void KelvinFrame::OpenProcessFile(wxString filename)
 {
 	wxGetApp().OrStatus(HookStatus::ProcessKnown);
 
-	/*int found = -1;
-
-	//For loop updates Open Recent Menu properly.
-	for(unsigned counter = 0; counter < m_ProcessHistory->GetCount(); counter++)
-	{
-		if(m_ProcessHistory->GetHistoryFile(counter) == filename)
-		{
-			found = counter;
-		}
-	}
-
-	if(found != -1)
-	{
-		m_ProcessHistory->RemoveFileFromHistory(found);
-	}*/
 	m_ProcessHistory->AddFileToHistory(filename);
 	
-	m_ProcessHistory->Save(*AppConfigFile);
-	AppConfigFile->Flush();
+	m_ProcessHistory->Save(*AppProcessConfigFile);
+	AppProcessConfigFile->Flush();
 
 	wxGetApp().SetProcessName(filename);
 	LogMessage("Targetting the process " + filename);
@@ -563,26 +546,10 @@ void KelvinFrame::OpenProcessFile(wxString filename)
 
 void KelvinFrame::OpenAntigenFile(wxString filename)
 {
-	/*int found = -1;
-
-	//For loop updates Open Recent Menu properly.
-	for(unsigned counter = 0; counter < m_HisAntigen->GetCount(); counter++)
-	{
-		if(m_HisAntigen->GetHistoryFile(counter) == filename)
-		{
-			found = counter;
-		}
-	}
-
-	if(found != -1)
-	{
-		m_ProcessHistory->RemoveFileFromHistory(found);
-	}*/
-
 	m_HisAntigen->AddFileToHistory(filename);
 	
-	m_HisAntigen->Save(*AppConfigFile);
-	AppConfigFile->Flush();
+	m_HisAntigen->Save(*AppAntigenConfigFile);
+	AppAntigenConfigFile->Flush();
 
 	wxGetApp().SetFileName(filename);
 
@@ -598,11 +565,6 @@ void KelvinFrame::LogMessage(const wxString& logMessage)
 	m_LogPanel->GetLogTextControl()->AppendText(wxString("\n"));
 }
 
-/*
-void KelvinFrame::OnUpdateUI(wxEvent& event)
-{
-	m_LogPanel->GetLogTextControl()->AppendText(wxString("Update UI\n"));
-}*/
 
 InfoPanel::InfoPanel(wxWindow* parent, int id, wxPoint pos, wxSize size, int style) : wxPanel(parent, id, pos, size, style)
 {

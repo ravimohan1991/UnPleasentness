@@ -3,13 +3,12 @@
 // Morb!D Windows example source
 //
 // based on the daru radar source (because i was too lazy to write a new one hehe;) )
+// Also note: this code only works in Release mode
 //
 //====================================================================================
 
 #pragma once
 
-//#include <windows.h>
-//#include <winbase.h>
 #include <math.h>
 
 #ifdef __cplusplus

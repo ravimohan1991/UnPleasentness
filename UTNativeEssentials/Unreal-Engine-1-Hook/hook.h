@@ -301,7 +301,8 @@ private:
 	 */
 	wxMenu* m_AntigenOpenRecent;
 
-	wxFileConfig* AppConfigFile;
+	wxFileConfig* AppProcessConfigFile;
+	wxFileConfig* AppAntigenConfigFile;
 
 	DECLARE_EVENT_TABLE()
 };
