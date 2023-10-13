@@ -122,6 +122,8 @@ void UE1HookApp::SetStatus(HookStatus status)
 KelvinFrame::KelvinFrame()
 	: wxFrame(nullptr, wxID_ANY, "UnPleasentness Injector")
 {
+	AppConfigFile = new wxFileConfig("UE1Hook", "", "UE1Hook.cfg", "", wxCONFIG_USE_LOCAL_FILE);
+
 	wxMenu* menuFile = new wxMenu;
 	menuFile->Append(wxID_OPEN, "&Load Antigen...\tCtrl-H",
 		"Select a DLL, SO, or DYLIB");
@@ -146,21 +148,20 @@ KelvinFrame::KelvinFrame()
 	// For memorizing recently opened antigen
 	m_AntigenOpenRecent = new wxMenu();
 
-
 	menuBar->Append(m_MenuProcessOpenRecent, "&Recent Process");
 	menuBar->Append(m_AntigenOpenRecent, "&Recent Antigen");
 
 	// Setup histories
-	m_ProcessHistory = new wxFileHistory();
+	m_ProcessHistory = new wxFileHistory(1, ID_MemProcess);
 	m_ProcessHistory->UseMenu(m_MenuProcessOpenRecent);
-	m_ProcessHistory->AddFilesToMenu(m_MenuProcessOpenRecent);
-	//m_MenuProcessOpenRecent->Remove(*m_MenuProcessOpenRecent->GetMenuItems().begin()); //Removes "no recent file" message
-	m_ProcessHistory->Load(*MyConfigBase::Get());
+	//m_ProcessHistory->AddFilesToMenu(m_MenuProcessOpenRecent);
+	//m_ProcessHistory->Load(*AppConfigFile);
 
-	m_HisAntigen = new wxFileHistory();
+	m_HisAntigen = new wxFileHistory(1, ID_MemAntigen);
 	m_HisAntigen->UseMenu(m_AntigenOpenRecent);
-	//m_AntigenOpenRecent->Remove(*m_AntigenOpenRecent->GetMenuItems().begin());
-	m_HisAntigen->Load(*MyConfigBase::Get());
+	//m_HisAntigen->AddFilesToMenu(m_AntigenOpenRecent);
+	//m_HisAntigen->Load(*MyConfigAntigenBase::Get());
+	//m_HisAntigen->Load(*AppConfigFile);
 
 	SetMenuBar(menuBar);
 
@@ -197,7 +198,7 @@ KelvinFrame::KelvinFrame()
 				Center());
 
 		wxString tempStr;
-		MyConfigBase::Get()->Read(_T("LastPerspective"), &tempStr, wxEmptyString);
+		AppConfigFile->Read(_T("LastPerspective"), &tempStr, wxEmptyString);
 		m_PaneManager->LoadPerspective(tempStr);
 		m_PaneManager->Update();
 	}
@@ -240,13 +241,8 @@ void KelvinFrame::OnExit(wxCommandEvent& event)
 	wxGetApp().ActivateInjectorLoop(false);
 	event.Skip(); // don't stop event, we still want window to close
 
-	m_ProcessHistory->Save(*MyConfigBase::Get());
-	m_HisAntigen->Save(*MyConfigBase::Get());
-
-	//delete (MyConfigBase::Get());
-
-	//delete m_ProcessHistory;
-	//delete m_HisAntigen;
+	//m_ProcessHistory->Save(*MyConfigBase::Get());
+	//m_HisAntigen->Save(*MyConfigAntigenBase::Get());
 
 	HookOmega("");
 	Close(true);
@@ -271,11 +267,51 @@ void KelvinFrame::OnHistoricAntigenLoad(wxCommandEvent& event)
 
 	LogMessage(wxString("Attempt open from memory ") + wxString(buffer));
 
-	wxString hisFile(m_ProcessHistory->GetHistoryFile(event.GetId() - wxID_FILE1));
+	wxString hisFile(m_HisAntigen->GetHistoryFile(event.GetId() - ID_MemAntigen));
 	{
 		if (!hisFile.empty())
 		{
-			OpenAntigenFile(hisFile);
+			switch (wxGetApp().GetStatus())
+			{
+			case HookStatus::Ready:
+				OpenAntigenFile(hisFile);
+				if (wxGetApp().GetStatus() == HookStatus::BothProcessAntigen)
+				{
+					wxGetApp().ActivateInjectorLoop(true);
+					wxGetApp().SetStatus(HookStatus::Looping);
+				}
+				else
+				{
+					AddLogText("Target process name required");
+				}
+				break;
+
+			case HookStatus::ProcessKnown | HookStatus::Ready:
+				OpenAntigenFile(hisFile);
+				if (wxGetApp().GetStatus() == HookStatus(BothProcessAntigen | Ready))
+				{
+					wxGetApp().ActivateInjectorLoop(true);
+					wxGetApp().SetStatus(HookStatus::Looping);
+				}
+				break;
+
+			case HookStatus::NotReady:
+				AddLogText(wxString("UE1Hook not ready for injection"));
+				break;
+
+			case HookStatus::Hooked:
+				AddLogText(wxString("UE1Hook already hooked a file (containing antigen)"));
+				AddLogText("Try after File->Reset");
+				break;
+
+			case HookStatus::Looping:
+				AddLogText(wxString("In middle of hooking a file (containing antigen)"));
+				AddLogText("Try after File->Reset");
+				break;
+
+			default:
+				break;
+			}
 		}
 	}
 }
@@ -288,11 +324,52 @@ void  KelvinFrame::OnHistoricOpenFile(wxCommandEvent& event)
 
 	LogMessage(wxString("Attempt open from memory ") + wxString(buffer));
 
-	wxString hisFile(m_ProcessHistory->GetHistoryFile(event.GetId() - wxID_FILE1));
+	wxString hisFile(m_ProcessHistory->GetHistoryFile(event.GetId() - ID_MemProcess));
 	{
 		if (!hisFile.empty())
 		{
-			OpenProcessFile(hisFile);
+			HookStatus status = wxGetApp().GetStatus();
+			switch (wxGetApp().GetStatus())
+			{
+			case HookStatus::Ready:
+				OpenProcessFile(hisFile);
+				if (wxGetApp().GetStatus() == HookStatus::BothProcessAntigen)
+				{
+					wxGetApp().ActivateInjectorLoop(true);
+					wxGetApp().SetStatus(HookStatus::Looping);
+				}
+				else
+				{
+					AddLogText("Antigen file name required");
+				}
+				break;
+
+			case HookStatus::AntigenLoaded | HookStatus::Ready:
+				OpenProcessFile(hisFile);
+				if (wxGetApp().GetStatus() == HookStatus(BothProcessAntigen | Ready))
+				{
+					wxGetApp().ActivateInjectorLoop(true);
+					wxGetApp().SetStatus(HookStatus::Looping);
+				}
+				break;
+
+			case HookStatus::NotReady:
+				AddLogText(wxString("UE1Hook not ready for injection"));
+				break;
+
+			case HookStatus::Hooked:
+				AddLogText(wxString("UE1Hook already hooked a file (containing antigen)"));
+				AddLogText("Try after File->Reset");
+				break;
+
+			case HookStatus::Looping:
+				AddLogText(wxString("In middle of hooking a file (containing antigen)"));
+				AddLogText("Try after File->Reset");
+				break;
+
+			default:
+				break;
+			}
 		}
 	}
 }
@@ -460,7 +537,7 @@ void KelvinFrame::OpenProcessFile(wxString filename)
 {
 	wxGetApp().OrStatus(HookStatus::ProcessKnown);
 
-	int found = -1;
+	/*int found = -1;
 
 	//For loop updates Open Recent Menu properly.
 	for(unsigned counter = 0; counter < m_ProcessHistory->GetCount(); counter++)
@@ -474,10 +551,11 @@ void KelvinFrame::OpenProcessFile(wxString filename)
 	if(found != -1)
 	{
 		m_ProcessHistory->RemoveFileFromHistory(found);
-	}
+	}*/
 	m_ProcessHistory->AddFileToHistory(filename);
-	m_ProcessHistory->Save(*(MyConfigBase::Get()));
-	MyConfigBase::Get()->Flush();
+	
+	m_ProcessHistory->Save(*AppConfigFile);
+	AppConfigFile->Flush();
 
 	wxGetApp().SetProcessName(filename);
 	LogMessage("Targetting the process " + filename);
@@ -485,7 +563,7 @@ void KelvinFrame::OpenProcessFile(wxString filename)
 
 void KelvinFrame::OpenAntigenFile(wxString filename)
 {
-	int found = -1;
+	/*int found = -1;
 
 	//For loop updates Open Recent Menu properly.
 	for(unsigned counter = 0; counter < m_HisAntigen->GetCount(); counter++)
@@ -499,10 +577,12 @@ void KelvinFrame::OpenAntigenFile(wxString filename)
 	if(found != -1)
 	{
 		m_ProcessHistory->RemoveFileFromHistory(found);
-	}
+	}*/
+
 	m_HisAntigen->AddFileToHistory(filename);
-	m_HisAntigen->Save(*(MyConfigBase::Get()));
-	MyConfigBase::Get()->Flush();
+	
+	m_HisAntigen->Save(*AppConfigFile);
+	AppConfigFile->Flush();
 
 	wxGetApp().SetFileName(filename);
 

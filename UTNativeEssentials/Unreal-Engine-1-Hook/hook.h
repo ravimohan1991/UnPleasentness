@@ -301,12 +301,14 @@ private:
 	 */
 	wxMenu* m_AntigenOpenRecent;
 
+	wxFileConfig* AppConfigFile;
+
 	DECLARE_EVENT_TABLE()
 };
 
 BEGIN_EVENT_TABLE(KelvinFrame, wxFrame)
-	EVT_MENU_RANGE(wxID_FILE1, wxID_FILE4, KelvinFrame::OnHistoricOpenFile)
-	EVT_MENU_RANGE(wxID_FILE5, wxID_FILE8, KelvinFrame::OnHistoricAntigenLoad)
+	EVT_MENU(ID_MemProcess, KelvinFrame::OnHistoricOpenFile)
+	EVT_MENU(ID_MemAntigen, KelvinFrame::OnHistoricAntigenLoad)
 END_EVENT_TABLE()
 
 /// <summary>
@@ -409,6 +411,23 @@ class MyConfigBase
 public:
 	static wxConfigBase* Get()
 	{
+		static wxFileConfig* AppConfigFile = new wxFileConfig("/store", "", "ue1Hook.cfg", "", wxCONFIG_USE_RELATIVE_PATH);
+		if (wxFileExists("ue1Hook.cfg"))
+		{
+			return AppConfigFile;
+		}
+		else
+		{
+			return wxConfigBase::Get();
+		}
+	}
+};
+/*
+class MyConfigAntigenBase
+{
+public:
+	static wxConfigBase* Get()
+	{
 		static wxFileConfig* AppConfigFile = new wxFileConfig("", "", "wxHexEditor.cfg", "", wxCONFIG_USE_RELATIVE_PATH);
 		if (wxFileExists("wxHexEditor.cfg"))
 		{
@@ -419,4 +438,4 @@ public:
 			return wxConfigBase::Get();
 		}
 	}
-};
+};*/
