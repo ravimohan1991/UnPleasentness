@@ -10,3 +10,4 @@ Dusko Pavlovic, [arXiv](https://arxiv.org/abs/1109.5542). The paper, in effect, 
 Versatile Native Experiments for understanding game security and adversarial process interplay
 
 1. https://gamehacking.academy/lesson/7/1
+2. https://www.youtube.com/@apxaey1459/videos
