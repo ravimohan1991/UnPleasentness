@@ -11,3 +11,5 @@ Versatile Native Experiments for understanding game security and adversarial pro
 
 1. https://gamehacking.academy/lesson/7/1
 2. https://www.youtube.com/@apxaey1459/videos
+3. https://www.blackhat.com/us-19/briefings/schedule/#process-injection-techniques---gotta-catch-them-all-16010
+4. https://www.youtube.com/watch?v=xewv122qxnk
