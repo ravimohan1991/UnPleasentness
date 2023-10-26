@@ -2,6 +2,8 @@
 #ifndef _MENU_
 #define _MENU_
 
+#include "main.h"
+
 class cMenu : public HookClass
 {
 public:
@@ -20,7 +22,7 @@ cMenu::~cMenu(){};
 
 void cMenu::MyInfos (UCanvas* Canvas, float PosX, float PosY, float Width, float Height)
 {
-	static TCHAR StrTemp[MAX_PATH];
+	static wchar_t StrTemp[MAX_PATH];
 
 	INT XL = 0;
 	INT YL = 0;
@@ -117,7 +119,7 @@ void cMenu::MyInfos (UCanvas* Canvas, float PosX, float PosY, float Width, float
 
 void cMenu::DrawSettings (UCanvas* Canvas, float PosX, float PosY, float Width, float Height)
 {
-	static TCHAR StrTemp[MAX_PATH];
+	static wchar_t StrTemp[MAX_PATH];
 
 	INT XL = 0;
 	INT YL = 0;

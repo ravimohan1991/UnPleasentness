@@ -107,20 +107,22 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${REPOSITORYROOT}/UnpleasentnessBin/${PLATFO
 # Set compiler and linker flags
 ################################################################################
 
-# For compiling with ut99 sdk crap (could be generational gap stuff between 1999 and 2023)
-add_compile_definitions(UNICODE=1)
-add_compile_definitions(_UNICODE=1)
-
 if(WINDOWS)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS=1)
   add_compile_definitions(_CRT_NO_VA_START_VALIDATION)
   add_compile_definitions(WIN32=1)
   add_compile_definitions(HOOK_WINDOWS_PLATFORM)
+  # For compiling with ut99 sdk crap (could be generational gap stuff between 1999 and 2023)
+  add_compile_definitions(UNICODE=1)
+  add_compile_definitions(_UNICODE=1)
 endif()
 
 if(LINUX)
   add_compile_definitions(__LINUX_ARM__)
+  add_compile_definitions(WIN32=1)
   add_compile_definitions(HOOK_LINUX_PLATFORM)
+  add_compile_definitions(UNICODE=1)
+  add_compile_definitions(_UNICODE=1)
 endif()
 
 if(MACOS)
@@ -171,12 +173,29 @@ if(OLDUNREAL_USE_ASAN)
   link_libraries("-fsanitize=address")
 endif()
 
-#add_compile_definitions(MOD_BUILD)
+add_compile_definitions(MOD_BUILD)
 
 ################################################################################
 # Including External and (or) non Epic libraries
 ################################################################################
-add_subdirectory(MiscLibs/Detours)
+if(LINUX)
+	if(OLDUNREAL_X86)
+	   add_compile_definitions(x86)
+	endif()
+	if(OLDUNREAL_AMD64)
+	   add_compile_definitions(_AMD64_)
+	endif()
+	if(OLDUNREAL_ARM)
+	   add_compile_definitions(_ARM_)
+	endif()
+	if(OLDUNREAL_ARM64)
+	   add_compile_definitions(_ARM64_)
+	endif()
+	add_compile_definitions(DETOUR_DEBUG)
+	add_subdirectory(MiscLibs/LinuxDetours)
+elseif(WINDOWS)
+	add_subdirectory(MiscLibs/Detours)
+endif()
 # wxWidgets settings
 set(wxUSE_STL ON CACHE INTERNAL "")
 set(wxUSE_REGEX OFF CACHE INTERNAL "")
@@ -216,12 +235,16 @@ target_include_directories(Morbid
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/Engine/Inc)
-		
+
 
 ################################################################################
 # Target Linking Rules
 ################################################################################
-target_link_libraries(IDK PUBLIC Core Engine Detours)
+if(LINUX)
+	target_link_libraries(IDK PUBLIC Core Engine LinuxDetours)
+elseif(WINDOWS)
+	target_link_libraries(IDK PUBLIC Core Engine Detours)
+endif()
 target_link_libraries(Morbid PUBLIC Core Engine Detours)
 target_link_libraries(UEHook PUBLIC wx::core wx::aui)
 target_link_libraries(DetoursExampule PUBLIC Detours)

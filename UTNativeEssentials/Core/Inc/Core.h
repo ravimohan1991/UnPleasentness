@@ -19,7 +19,11 @@
 
 // API definition.
 #ifndef CORE_API
-#define CORE_API DLL_IMPORT
+	#if _MSC_VER
+		#define CORE_API DLL_IMPORT
+	#elif __GNUG__
+		#define CORE_API
+	#endif
 #endif
 
 // Build options.
@@ -103,12 +107,13 @@ private:
 
 // Compiler specific include.
 #include <string.h>
-#if _MSC_VER	
+#if _MSC_VER
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
-	#include "UnVcWin32.h"	
-#elif __GNUG__	
+	#include "UnVcWin32.h"
+#elif __GNUG__
 	#include "UnGnuG.h"
+	#include "UnEngineGnuG.h"
 #else
 	#error Unknown Compiler
 #endif
@@ -161,7 +166,7 @@ private:
 #define FORCE_64BIT_PADDING_BYTE FORCE_64BIT_PADDING_BYTE2(__LINE__)
 #else
 #define FORCE_64BIT_PADDING_DWORD
-#define FORCE_64BIT_PADDING_BYTE 
+#define FORCE_64BIT_PADDING_BYTE
 #endif
 
 // Global constants.

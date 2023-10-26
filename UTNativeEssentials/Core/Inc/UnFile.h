@@ -3,8 +3,10 @@
 	Copyright 1997-1999 Epic Games, Inc. All Rights Reserved.
 =============================================================================*/
 
-#include <math.h>
+#pragma once
 
+#include <math.h>
+#include "Core.h"
 /*-----------------------------------------------------------------------------
 	Global variables.
 -----------------------------------------------------------------------------*/
@@ -214,7 +216,7 @@ private:
 # define guard_nofunc			{try{
 # define unguardf_nofunc(msg)	}catch(TCHAR*Err){throw Err;}catch(...){appUnwindf msg; throw;}}
 #else
-// stijn: C++ catch blocks cannot catch segfaults on nix. Ryan's guard blocks 
+// stijn: C++ catch blocks cannot catch segfaults on nix. Ryan's guard blocks
 // are probably the cleanest and most portable way to create a backtrace...
 # define guard(func)			{UnGuardBlockTLS __FUNC_NAME__(TEXT(#func)); try{
 # define unguard				}catch(TCHAR*Err){throw Err;}catch(...){appUnwindf(TEXT("%s"),UnGuardBlockTLS::GetFuncName()); throw;}}
@@ -384,84 +386,84 @@ CORE_API const TCHAR* appUserName();
 // ============================================================================
 //
 // UT originally preferred RDTSC as the timing source on any x86 platform.
-// This made sense from a performance perspective (because the TSC can be read 
+// This made sense from a performance perspective (because the TSC can be read
 // from user space), but it also caused a _LOT_ of problems because:
 //
-// 1) The TSC does not always tick at a constant speed (unless the CPU has a 
-// constant-rate TSC). Dynamic frequency scaling (e.g., Intel SpeedStep) caused 
+// 1) The TSC does not always tick at a constant speed (unless the CPU has a
+// constant-rate TSC). Dynamic frequency scaling (e.g., Intel SpeedStep) caused
 // the TSC (and, therefore, the game) to speed up and down.
 //
-// Current situation: Modern CPUs (Intel P4 and later or AMD Phenom and later) 
-// generally have a constant-rate TSC. However, even a constant-rate TSC can 
-// slow down, speed up, or pause unexpectedly because of interaction with 
+// Current situation: Modern CPUs (Intel P4 and later or AMD Phenom and later)
+// generally have a constant-rate TSC. However, even a constant-rate TSC can
+// slow down, speed up, or pause unexpectedly because of interaction with
 // power-saving features. See the note on invariant TSCs down below.
-// 
-// 2) The TSC is not always synchronized between CPU cores. This could 
-// cause the time to "drift" if the game's main thread got scheduled on a 
-// different CPU core than the one it previously ran on. The most visible side 
+//
+// 2) The TSC is not always synchronized between CPU cores. This could
+// cause the time to "drift" if the game's main thread got scheduled on a
+// different CPU core than the one it previously ran on. The most visible side
 // effects of an unsychronized TSC are warping and movement glitches.
 //
-// Current situation: Most modern CPUs and OSes try to keep the TSC synchronized 
-// across cores. Intel does this even on multi-socket machines. AMD only does it 
-// across cores on the same socket. Once again, some exceptions apply. Linux has 
-// some heuristics to guess whether the TSC is synchronized (see 
+// Current situation: Most modern CPUs and OSes try to keep the TSC synchronized
+// across cores. Intel does this even on multi-socket machines. AMD only does it
+// across cores on the same socket. Once again, some exceptions apply. Linux has
+// some heuristics to guess whether the TSC is synchronized (see
 // https://github.com/torvalds/linux/blob/master/arch/x86/kernel/tsc.c).
-// Windows will prefer HPET as the underlying timing source for 
+// Windows will prefer HPET as the underlying timing source for
 // QueryPerformanceCounter if synchronizing the TSC is not feasible.
 //
-// 3) The TSC can stop ticking if the CPU is in some power saving mode (e.g., 
-// in ACPI P-, C-, and T-states). Most modern mid-range and high-end CPUs have 
-// an "invariant TSC", which ticks at a constant rate even in ACPI P/C/T-states. 
-// Contrary to regular constant-rate TSCs and  synchronized TSCs, the presence of 
-// an invariant TSC is explicitly advertised through the CPUID functionality of 
-// the CPU (bit 8 of register EDX of CPUID request 0x80000007 is set to 1 if an 
+// 3) The TSC can stop ticking if the CPU is in some power saving mode (e.g.,
+// in ACPI P-, C-, and T-states). Most modern mid-range and high-end CPUs have
+// an "invariant TSC", which ticks at a constant rate even in ACPI P/C/T-states.
+// Contrary to regular constant-rate TSCs and  synchronized TSCs, the presence of
+// an invariant TSC is explicitly advertised through the CPUID functionality of
+// the CPU (bit 8 of register EDX of CPUID request 0x80000007 is set to 1 if an
 // invariant TSC is present).
 //
-// Current situation: Invariant TSCs are somewhat reliable. However, they can 
-// still get reset after a CPU or CPU cores wakes up from some sleep state. Once 
-// again, you can see the effects this has on the Linux kernel in 
+// Current situation: Invariant TSCs are somewhat reliable. However, they can
+// still get reset after a CPU or CPU cores wakes up from some sleep state. Once
+// again, you can see the effects this has on the Linux kernel in
 // https://github.com/torvalds/linux/blob/master/arch/x86/kernel/tsc.c.
 //
 // ============================================================================
 // TIMING SOURCES IN UT V469 AND LATER:
 // ============================================================================
-// 
-// Because of the various problems with TSCs, UT v469 will prefer 
-// QueryPerformanceCounter as the timing source on Windows, and 
-// gettimeofday as the timing source on Linux and mac. Both APIs 
-// will select an appropriate timing source based on which features the CPU and 
+//
+// Because of the various problems with TSCs, UT v469 will prefer
+// QueryPerformanceCounter as the timing source on Windows, and
+// gettimeofday as the timing source on Linux and mac. Both APIs
+// will select an appropriate timing source based on which features the CPU and
 // OS support.
 //
 // On most Windows x86 systems, QueryPerformanceCounter will use the TSC as the
 // primary timing source. However, QPC also takes corner cases such as waking
 // up from a sleep state into account.
 //
-// On Linux x86 systems, gettimeofday uses whatever timing source has the 
+// On Linux x86 systems, gettimeofday uses whatever timing source has the
 // highest accuracy and precision. Technically, gettimeofday is a system call,
 // and therefore incurs quite some overhead. However, any somewhat modern Linux
-// system virtualizes gettimeofday through the VDSO to make it as fast as a 
+// system virtualizes gettimeofday through the VDSO to make it as fast as a
 // user-space function call.
 //
 // There is one corner case where we will use RDTSC directly on Windows: if QPC
-// has a very low frequency (e.g., 10Mhz) _AND_ if the CPU supports invariant 
-// TSC. 
+// has a very low frequency (e.g., 10Mhz) _AND_ if the CPU supports invariant
+// TSC.
 //
 // ============================================================================
 // TIMING FUNCTIONS AND VARIABLES IN UT V469 AND LATER:
 // ============================================================================
 //
-// UT still heavily relies on the assumption that appCycles is a low-cost 
+// UT still heavily relies on the assumption that appCycles is a low-cost
 // function. On x86 systems, we therefore still use RDTSC as the timing source
 // for appCycles, even if the TSC is not stable.
-// 
-// We _STRONGLY_ discourage you from using appCycles/appCyclesLong as a 
-// reliable timing source. If you absolutely need an ultra low-cost timing
-// function, however, you can convert the return value of 
-// appCycles/appCyclesLong to a timestamp by multiplying it with 
-// GSecondsPerCycle/GSecondsPerCycleLong. 
 //
-// If you need a reliable timing source, then please use appSeconds or 
-// appSecondsNew. The latter function has higher precision, but it is not 
+// We _STRONGLY_ discourage you from using appCycles/appCyclesLong as a
+// reliable timing source. If you absolutely need an ultra low-cost timing
+// function, however, you can convert the return value of
+// appCycles/appCyclesLong to a timestamp by multiplying it with
+// GSecondsPerCycle/GSecondsPerCycleLong.
+//
+// If you need a reliable timing source, then please use appSeconds or
+// appSecondsNew. The latter function has higher precision, but it is not
 // available in older versions of UT.
 //
 
@@ -477,10 +479,10 @@ CORE_API UBOOL appFileIsNewer(const TCHAR* FilenameA, const TCHAR* FilenameB);
 
 // stijn: IMPORTANT NOTE ON STORAGE OF TIMING INFORMATION:
 //
-// UEngine originally used single-precision floats to store ALL timing 
-// information. This was a _BAD_ design choice (though, understandable because 
+// UEngine originally used single-precision floats to store ALL timing
+// information. This was a _BAD_ design choice (though, understandable because
 // of the PSX2). All floating point numbers inevitably lose precision
-// as they get bigger, but this happens so much more quickly for single-precision 
+// as they get bigger, but this happens so much more quickly for single-precision
 // floats that you will actually notice that the game glitches if your system has
 // over 1 day of uptime.
 //
@@ -490,8 +492,8 @@ CORE_API UBOOL appFileIsNewer(const TCHAR* FilenameA, const TCHAR* FilenameB);
 // For more background info, see:
 // https://medium.com/@sidneyriffic/floating-point-numbers-arithmetic-85e543828d38
 // https://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/
-// 
-// 
+//
+//
 #if !DEFINED_appSeconds
 CORE_API FTime appSeconds();
 CORE_API DOUBLE appSecondsNew();
@@ -663,7 +665,7 @@ inline UBOOL appIsAlnum( TCHAR c )
 // sizes of the strings they can output. appToUnicode and appFromUnicode _ARE_
 // restricted to strings of 1024 characters. Source strings that are over 1024
 // characters long will be truncated.
-// 
+//
 CORE_API const ANSICHAR* appToAnsi( const TCHAR* Str );
 CORE_API const UNICHAR* appToUnicode( const TCHAR* Str );
 CORE_API const TCHAR* appFromAnsi( const ANSICHAR* Str );
@@ -674,7 +676,7 @@ CORE_API const TCHAR* appFromUnicode( const UNICHAR* Str );
 // reallocating/moving long strings after conversion. @MaxCount is always the size
 // of the destination buffer in number of characters. Callers need to ensure that
 // @MaxCount is sufficient to contain a NUL-terminator!
-// 
+//
 // The size of the destination buffer in bytes is, therefore, always MaxCount *
 // sizeof(type of output character).
 //
@@ -933,7 +935,7 @@ __forceinline void* operator new( size_t Size, const TCHAR* Tag )
 	unguardSlow;
 }
 
-__forceinline void* operator new( size_t Size ) 
+__forceinline void* operator new( size_t Size )
 {
 	guardSlow(new);
 	return appMalloc( Size, TEXT("new") );
@@ -986,7 +988,7 @@ inline BYTE appFloorLogTwo(DWORD Arg)
 		if (Arg & (1u << DWORD(Bit)))
 			return Bit;
 
-	// lg(0) is undefined, so we can't solve.                                                
+	// lg(0) is undefined, so we can't solve.
 	return 0;
 }
 #endif

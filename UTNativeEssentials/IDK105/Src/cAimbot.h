@@ -2,6 +2,8 @@
 #ifndef _AIM_
 #define _AIM_
 
+#include "main.h"
+
 class cAimbot : public HookClass
 {
 protected:
@@ -168,8 +170,8 @@ FVector cAimbot::AimHeight (AActor* Target)
 	return HisPos;
 }
 
-FVector cAimbot::PingCorrection(APawn* Target) 
-{ 
+FVector cAimbot::PingCorrection(APawn* Target)
+{
     FVector V = FVector(0,0,0);
 	if ( Me->Role < ROLE_Authority)
 	{
@@ -184,7 +186,7 @@ FVector cAimbot::PingCorrection(APawn* Target)
 void cAimbot::FireMyWeapon (void)
 {
     bBotShooting = true;
-	mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_RIGHTUP,0,0,0,0);
+	mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
 }
 
 void cAimbot::StopMyWeapon (void)
@@ -192,7 +194,7 @@ void cAimbot::StopMyWeapon (void)
     if ( bBotShooting )
 	{
 	    bBotShooting = false;
-		mouse_event(MOUSEEVENTF_RIGHTUP | MOUSEEVENTF_LEFTUP,0,0,0,0);
+		mouse_event(MOUSEEVENTF_RIGHTUP | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 	}
 }
 
@@ -315,7 +317,7 @@ bool cAimbot::IsVisible (APawn* Target)
 
 bool cAimbot::GoodAim ()
 {
-    if(bAutoAim == 2) 
+    if(bAutoAim == 2)
 	{
 	    return (GetAsyncKeyState(VK_LBUTTON) < 0 || GetAsyncKeyState(VK_RBUTTON) < 0);
 	}

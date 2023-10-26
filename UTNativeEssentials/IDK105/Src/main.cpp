@@ -1,24 +1,25 @@
 /*
     IDK 1.0.5d Source Code
     Copyright (C) 2007,2008 CheatatOr http://www.cheatator.tk
-    
+
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
     as published by the Free Software Foundation; either version 2
     of the License, or (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-    Credits: HelioS, Grief, Saphex, r00t.        
+    Credits: HelioS, Grief, Saphex, r00t.
 */
 #include "main.h"
+#include "detours.h"
 #include "cRadar.h"
 #include "cMenu.h"
 #include "cAimbot.h"
@@ -81,9 +82,9 @@ void Init (UCanvas* Canvas)
 	if (bInit) return;
 
 	LoadTexture(WhiteTexture, "UWindow.WhiteTexture");
-	
+
 	// some loading sequence for dynamic fonts.
-	
+
 	LoadFont(SmallFont, "LadderFonts.UTLadder22");
 
 	bInit = true;
@@ -102,27 +103,27 @@ void CheckKeys (UCanvas* Canvas)
 	}
 	else if (GetAsyncKeyState(VK_NUMPAD2) & 0x01)
 	{
-		bAutoFire = !bAutoFire;	
+		bAutoFire = !bAutoFire;
 	}
 	else if (GetAsyncKeyState(VK_NUMPAD3) & 0x01)
 	{
-		bTrigger = !bTrigger;	
+		bTrigger = !bTrigger;
 	}
 	else if (GetAsyncKeyState(VK_NUMPAD4) & 0x01)
 	{
-		b3DRadar = !b3DRadar;	
+		b3DRadar = !b3DRadar;
 	}
 	else if (GetAsyncKeyState(VK_NUMPAD5) & 0x01)
 	{
-		b2DRadar = !b2DRadar;	
+		b2DRadar = !b2DRadar;
 	}
 	else if (GetAsyncKeyState(VK_NUMPAD6) & 0x01)
 	{
-		bHealthbars = !bHealthbars;	
+		bHealthbars = !bHealthbars;
 	}
 	else if (GetAsyncKeyState(VK_NUMPAD7) & 0x01)
 	{
-		bSettings = !bSettings;	
+		bSettings = !bSettings;
 	}
 	else if (GetAsyncKeyState(VK_NUMPAD8) & 0x01)
 	{
@@ -252,7 +253,7 @@ void inline PawnIterator(FSceneNode* FS)
 	if ((BestTarget != NULL) && Hook.cA->IsInRange(BestTarget))
 	{
 		//Me->MouseSensitivity = 0;
-		block = true;	
+		block = true;
 		Hook.cA->SetMyRotation(Canvas, BestTarget);
 		if (bAutoFire)
 		{
@@ -285,7 +286,7 @@ void DrawMorbiDConfigurationWindow(UCanvas* Canvas)
 
 	//Draw our configuration window
 	MWindow.DrawWindow(ConfigurationWindow, XPosTracker, YPosTracker, 134.0f * Scale, 2 * 134.0f * Scale, 1, false, TEXT("Settings Window"));
-	
+
 	YPosTracker += 56.0f;// temporary
 
 	//Add all the variety of checkboxes for the settings we have
@@ -406,7 +407,7 @@ void MyPostRender (FSceneNode* FS)
 
 	Init(Canvas);
 	MWindow.MorbidWindowsMain(Canvas);
-		
+
 	if (!bHook ) return;
 
 	if(bSettings)
@@ -467,7 +468,7 @@ DWORD WINAPI LoaderThread( LPVOID lpParam )
 
 		return getchar();
 	}
-	
+
 	oPostRender = (tPostRender)DetourFindFunction("Render.dll", "?PostRender@URender@@UAEXPAUFSceneNode@@@Z");
 	log_add("Another approach for hookable address %x, error code: %i", oPostRender, GetLastError());
 
@@ -477,7 +478,7 @@ DWORD WINAPI LoaderThread( LPVOID lpParam )
 
 	DetourTransactionBegin();
 	log_add("Transaction begin %i", GetLastError());
-	
+
 	DetourUpdateThread(GetCurrentThread());
 	log_add("Update Thread %i", GetLastError());
 

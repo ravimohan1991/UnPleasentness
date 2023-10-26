@@ -22,6 +22,8 @@
 #ifndef _RADAR_
 #define _RADAR_
 
+#include "main.h"
+
 class cRadar : public HookClass
 {
 protected:
@@ -68,7 +70,7 @@ FVector cRadar::WorldToScreen (UCanvas* Canvas, FVector WorldLocation)
 
 void cRadar::DrawBoundingBox(UCanvas* Canvas, APawn* Target)
 {
-	static TCHAR StrTemp[MAX_PATH];
+	static wchar_t StrTemp[MAX_PATH];
 	FVector X,Y,Z,E,D,F,top,bottom;
 	float width, Left, Right, Top, Bot;
 	FColor Color = GetTeamColor(Target);
@@ -82,7 +84,7 @@ void cRadar::DrawBoundingBox(UCanvas* Canvas, APawn* Target)
 	{
 		return;
 	}
- 
+
 	top = Target->Location;
 	top.Z += Target->CollisionHeight * 1.1;
 	top = WorldToScreen(Canvas,top);
@@ -158,14 +160,14 @@ void inline cRadar::DrawPlayer2DRadar (UCanvas* Canvas, APawn* Target, float Pos
 	{
 		return;
 	}
-	
+
 	FVector X,Y,Z,D;
 	FRotator R = MyCameraRotation + FRotator(0, 16384, 0);
 	R.Roll = 0;
 	R.Pitch = 0;
 
 	GetAxes(R, X, Y, Z);
-	
+
 	D = (Target->Location - MyCameraLocation);
 	D.Z = 0;
 
@@ -177,7 +179,7 @@ void inline cRadar::DrawPlayer2DRadar (UCanvas* Canvas, APawn* Target, float Pos
 	}
 
 	// Embrace for some High-School mathematics, eh!!
-	
+
 	float origPosX = PosX_ + Width / 2.0f; // center x
 	float origPosY = PosY_ + Height / 2.0f; // center y
 

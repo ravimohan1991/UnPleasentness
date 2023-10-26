@@ -1,13 +1,19 @@
 #pragma once
-#ifndef _MAIN_
-#define _MAIN_
 
-#include <windows.h>
 #include <stdio.h>
 #include <math.h>
-#include "detours.h"
 
-#define ENGINE_API __declspec(dllimport) 
+#if HOOK_LINUX_PLATFORM
+	#define ENGINE_API
+	#define WINAPI
+	#ifndef MAX_PATH
+		#define MAX_PATH  260
+	#endif
+	typedef void * PVOID;
+#elif HOOK_WINDOWS_PLATFORM
+	#include <windows.h>
+	#define ENGINE_API __declspec(dllimport)// if windows
+#endif
 
 //
 // A specific pixel encoding.
@@ -222,7 +228,6 @@ enum ETextureFormat
 #include "UnRenderIteratorSupport.h"
 #include "UnRender.h"
 #include "UnCon.h"
-
 //#include "cDynamicFont.h"
 
 int ReDirectFunction(const char* strDllName, const char* strFunctionName, DWORD newFuncAddy);
@@ -305,7 +310,7 @@ class cSecure* cS;
 HookClass::HookClass()  { }
 HookClass::~HookClass() { }
 
-HookClass Hook; 
+HookClass Hook;
 
 #define SetPos(PosX,PosY) \
 	Canvas->CurX = PosX;  \
@@ -381,17 +386,17 @@ void GetAxes (FRotator R, FVector &X, FVector &Y, FVector &Z)
 
 	FRotator R2 = R;
 	R2.Pitch = 0.f;
-	
+
 	Y = R2.Vector();
-	
+
 	//Y.Z = 0.f;
 	Y.Normalize();
-	
+
 	R.Yaw -= 16384;
 	R.Pitch += 16384;
-	
+
 	Z = R.Vector();
-	
+
 	//Z.Z = 0.f;
 	Z.Normalize();
 }
@@ -446,18 +451,18 @@ void DrawMyText(UCanvas* Canvas, FString Str, float PosX, float PosY, FColor Col
 	Canvas->Color = TempColor;
 }
 
-DWORD WINAPI MouseDown ( PVOID pParam )
+DWORD WINAPI MouseDown(PVOID pParam)
 {
-	mouse_event(MOUSEEVENTF_LEFTDOWN,0,0,0,0);
+	mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
 	Sleep(70);
-	mouse_event(MOUSEEVENTF_LEFTUP,0,0,0,0);
+	mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 	ExitThread(0);
 	return 0;
 }
 
-DWORD WINAPI MouseUp ( PVOID pParam )
+DWORD WINAPI MouseUp(PVOID pParam)
 {
-	mouse_event(MOUSEEVENTF_LEFTUP,0,0,0,0);
+	mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 	ExitThread(0);
 	return 0;
 }
@@ -484,8 +489,8 @@ void DrawRec(UCanvas* Canvas, float ScreenX, float ScreenY, float Width, float H
 		Parms.X		= Width;
 		Parms.Y		= Height;
 
-		Canvas->CurX = ScreenX; 
-		Canvas->CurY = ScreenY; 
+		Canvas->CurX = ScreenX;
+		Canvas->CurY = ScreenY;
 		Canvas->Color = Color;
 		Canvas->Style = 1;
 		Canvas->ProcessEvent(F, &Parms);
@@ -497,5 +502,3 @@ void DrawRec(UCanvas* Canvas, float ScreenX, float ScreenY, float Width, float H
 bool doonce = false;
 bool doonce1 = false;
 bool doonce2 = false;
-
-#endif _MAIN_

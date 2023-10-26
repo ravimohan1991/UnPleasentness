@@ -21,7 +21,11 @@ target_include_directories(IDK
     PRIVATE
         # where the library itself will look for its internal headers
         ${CMAKE_CURRENT_SOURCE_DIR}/Src
-        ${CMAKE_CURRENT_SOURCE_DIR}/../MiscLibs/Detours/src
+	if(LINUX)
+		${CMAKE_CURRENT_SOURCE_DIR}/../MiscLibs/LinuxDetours/LinuxDetours
+	elseif(WINDOWS)
+		${CMAKE_CURRENT_SOURCE_DIR}/../MiscLibs/Detours/src
+	endif()
     PUBLIC
         # where top-level project will look for the library's public headers
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Src>
