@@ -4,3 +4,6 @@
 [submodule "UTNativeEssentials/MiscLibs/LinuxDetours"]
 	path = UTNativeEssentials/MiscLibs/LinuxDetours
 	url = https://github.com/ravimohan1991/LinuxDetours
+[submodule "UTNativeEssentials/MiscLibs/injector"]
+	path = UTNativeEssentials/MiscLibs/injector
+	url = https://github.com/ravimohan1991/injector
