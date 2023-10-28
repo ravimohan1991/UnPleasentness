@@ -64,7 +64,7 @@ void log_add(const char* fmt, ...)
 
 	sprintf(logbuf, "%02d:%02d:%02d - ", current_tm->tm_hour, current_tm->tm_min, current_tm->tm_sec);
 	va_start(va_alist, fmt);
-	_vsnprintf(logbuf + strlen(logbuf), sizeof(logbuf) - strlen(logbuf), fmt, va_alist);
+	//_vsnprintf(logbuf + strlen(logbuf), sizeof(logbuf) - strlen(logbuf), fmt, va_alist);
 	va_end(va_alist);
 
 	printf("%s\n", logbuf);
@@ -93,7 +93,7 @@ void Init (UCanvas* Canvas)
 // Windows specific
 void CheckKeys (UCanvas* Canvas)
 {
-	if (GetAsyncKeyState(VK_NUMPAD0) & 0x01)
+	/*if (GetAsyncKeyState(VK_NUMPAD0) & 0x01)
 	{
 		bHook = !bHook;
 	}
@@ -136,7 +136,7 @@ void CheckKeys (UCanvas* Canvas)
 	else if (GetAsyncKeyState(VK_END) & 0x01)
 	{
 		Scale -= 0.1f;
-	}
+	}*/
 }
 
 void GetCameraLocation (FVector &InputLocation, FRotator &InputRotation)
@@ -436,60 +436,66 @@ void xPostRender(FSceneNode *FS)
 {
 	MyPostRender(FS);
 
-	//GLog->Logf(TEXT("Detour is in action"));
+	// For linux based testing
+	GLog->Logf(TEXT("Detour is in action"));
 }
 
-DWORD WINAPI LoaderThread( LPVOID lpParam )
+DWORD WINAPI LoaderThread(LPVOID lpParam)
 {
-	log_add("LoaderThread spawned. Attempt to hook into Render.dll");
-
-	HMODULE hDll = LoadLibraryA("Render.dll");
-
-	if (hDll != nullptr)
-	{
-		log_add("Got handle from Render.dll at address %x", hDll);
-	}
-	else
-	{
-		log_add("Couldn't get hold of the handle. Last error: %u", GetLastError());
-
-		return getchar();
-	}
-
-	void* pAddress = (void*)GetProcAddress(hDll, "?PostRender@URender@@UAEXPAUFSceneNode@@@Z");
-
-	if (pAddress != nullptr)
-	{
-		log_add("Attempt to hook at address %x", pAddress);
-	}
-	else
-	{
-		log_add("Couldn't hook into the PostRender routine");
-
-		return getchar();
-	}
-
+#ifdef HOOK_WINDOWS_PLATFORM
 	oPostRender = (tPostRender)DetourFindFunction("Render.dll", "?PostRender@URender@@UAEXPAUFSceneNode@@@Z");
-	log_add("Another approach for hookable address %x, error code: %i", oPostRender, GetLastError());
+#elif HOOK_LINUX_PLATFORM
+	oPostRender = (tPostRender)DetourFindFunction("Render.so", "_ZN7URender10PostRenderEP10FSceneNode");
+#endif
 
-
+#ifdef HOOK_WINDOWS_PLATFORM
 	DetourRestoreAfterWith();
-	log_add("RestoreAfter %i", GetLastError());
+	//log_add("RestoreAfter %i", GetLastError());
 
 	DetourTransactionBegin();
-	log_add("Transaction begin %i", GetLastError());
+	//log_add("Transaction begin %i", GetLastError());
 
 	DetourUpdateThread(GetCurrentThread());
-	log_add("Update Thread %i", GetLastError());
+	//log_add("Update Thread %i", GetLastError());
 
 	LONG errorCode = DetourAttach(&(LPVOID&)oPostRender, xPostRender);
 	DetourTransactionCommit();
-
-	log_add("Detour done with original %i and %i", errorCode, GetLastError());
+#elif HOOK_LINUX_PLATFORM
+	TRACED_HOOK_HANDLE aHandle;
+	LONG errorCode = DetourInstallHook(&oPostRender, (void*)&xPostRender, NULL, aHandle);
+#endif
 
 	return 1;
 }
 
+#ifdef HOOK_LINUX_PLATFORM
+/*
+ * loadMsg()
+ *
+ * This function is automatically called when the sample library is injected
+ * into a process. It calls hello() to output a message indicating that the
+ * library has been loaded.
+ *
+ */
+ #include <dlfcn.h>
+__attribute__((constructor))
+void loadMsg()
+{
+
+	void* handle = dlopen("Rende.so", RTLD_NOW);
+	oPostRender = (tPostRender)dlsym(handle, "_ZN7URender10PostRenderEP10FSceneNode");
+
+	GLog->Logf(TEXT("##################### %x"), oPostRender);
+
+	//LoaderThread(NULL);
+	//oPostRender = (tPostRender)DetourFindFunction("Render.so", "_ZN7URender10PostRenderEP10FSceneNode");
+
+	TRACED_HOOK_HANDLE aHandle;
+	LONG errorCode = DetourInstallHook(&oPostRender, (void*)&xPostRender, NULL, aHandle);
+}
+#endif
+
+#ifdef HOOK_WINDOWS_PLATFORM
 BOOL __stdcall DllMain(HMODULE hDll, DWORD reason, PVOID lpReserved)
 {
 	switch(reason)
@@ -518,252 +524,4 @@ BOOL __stdcall DllMain(HMODULE hDll, DWORD reason, PVOID lpReserved)
 		}
 	}
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
- *  FUNCTION: MyProcessEvent(class UFunction* Function, void* Params, void* Result=NULL)
- *
- *  PURPOSE: Hooked ProcessEvent from RedirectFunction
- *
- *  COMMENTS:
- *
- *       Calls original ProcessEvent and MyProcessEvent in an orderly fasion
- *
- */
-void WINAPI MyProcessEvent(class UFunction* Function, void* Parms, void* Result)
-{
-	log_add("MyProcess Event");
-
-	DWORD Bumpeh = Function->GetIndex();
-	if (Bump)
-	{
-		if (Bump != Bumpeh)
-		{
-			orgProcessEvent(Function, Parms, Result); // call original ProcessEvent
-			MProcessEvent(Function, Parms, Result); // call Our ProcessEvent
-		}
-		else
-		{
-			//zz
-		}
-	}
-	else
-	{
-		orgProcessEvent(Function, Parms, Result); // call original ProcessEvent
-		MProcessEvent(Function, Parms, Result); // call Our ProcessEvent
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
- *  FUNCTION: WINAPI MProcessEvent(class UFunction* Function, void* Params, void* Result=NULL)
- *
- *  PURPOSE: Called After the original ProcessEvent, allows you to hook the majority of
- *				UEngine functions.
- *
- */
-void WINAPI MProcessEvent(class UFunction* Function, void* Parms, void* Result)
-{
-	FString func;
-	func = (FString)Function->GetName();
-	char buffer[255];
-
-	for (INT i = 0; i < func.Len(); i++)
-	{
-		buffer[i] = func.Mid(i, 1);
-		//sprintf(&buffer[i], "%s", func.Mid(i, 1));
-	}
-	log_add("FUNC %s  %d", buffer, Function->GetIndex()); // log all functions called through ProcessEvent
-
-	if (func.InStr(TEXT("PostRender")) != -1) // called PostRender
-	{
-		AHUD_eventPostRender_Parms* PostRend; // storage for hooked PostRender
-		PostRend = (AHUD_eventPostRender_Parms*)Parms; // hook PostRender
-		if (!doonce)
-		{
-			log_add("hooked PostRender @ 0x%x", (DWORD)PostRend); // log that it's been hooked
-			doonce = true;
-		}
-		pCanvas = PostRend->Canvas; // make hooked canvas = our private canvas
-		pPostRender(); // call hooked PostRender
-	}
-	else if (func.InStr(TEXT("PreRender")) != -1) // called PreRender
-	{
-		AHUD_eventPreRender_Parms* PreRend; // storage for hooked PreRender
-		PreRend = (AHUD_eventPreRender_Parms*)Parms; // hook PreRender
-		if (!doonce1)
-		{
-			log_add("hooked PreRender @ 0x%x", (DWORD)PreRend); // log that it's been hooked
-			doonce1 = true;
-		}
-		pPreRender(); // call hooked PreRender
-	}
-	else if (func.InStr(TEXT("Tick")) != -1) // called Tick
-	{
-		AActor_eventTick_Parms* Tickeh; // storage for hooked Tick
-		Tickeh = (AActor_eventTick_Parms*)Parms; // hook Tick
-		if (!doonce2)
-		{
-			log_add("hooked Tick @ 0x%x", (DWORD)Tickeh); // log that it's been hooked
-			doonce2 = true;
-		}
-		pTick(); // call hooked Tick
-	}
-	else if (func.InStr(TEXT("Bump")) != -1) // bump called
-	{
-		Bump = Function->GetIndex();
-	}
-	else
-	{
-		// zz
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
- *  FUNCTION: pPostRender(void)
- *
- *  PURPOSE: Execute code through hooked PostRender
- *
- *  COMMENTS:
- *
- *		One of the most important functions that you hook, PostRender. You
- *		will put the majority of your code here since it is called every time
- *		that the original PostRender is called.
- */
-void pPostRender()
-{
-	/*
-	pCanvas->Color = FColor(0, 255, 255, 0);
-	pCanvas->CurX = 50;
-	pCanvas->CurY = 50;
-	pCanvas->WrappedPrintf(pCanvas->MedFont, 0, TEXT("Herro Worrd!"));
-	*/
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
- *  FUNCTION: pTick(void)
- *
- *  PURPOSE: Execute code through hooked Tick
- *
- *  COMMENTS:
- *
- *		Almost like PostRender but different, you may get use out of this too.
- */
-void pTick()
-{
-	// zz
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
- *  FUNCTION: pPreRender(void)
- *
- *  PURPOSE: Execute code through hooked PreRender
- *
- *  COMMENTS:
- *
- */
-void pPreRender()
-{
-	// zz
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
- *  FUNCTION: ReDirectFunction(char* strDllName, char* strFunctionName, DWORD newFuncAddy)
- *
- *  PURPOSE: Redirect functions from withinside a dll to a hooked function.
- *
- *  COMMENTS:
- *
- *		Used in this case to Redirect the most important function of all - ProcessEvent
- *
- */
-int ReDirectFunction(const char* strDllName, const char* strFunctionName, DWORD newFuncAddy)
-{
-	DWORD                       dwBackup;
-	DWORD                       dwIndex;
-	DWORD                       dwOffset;
-	HMODULE                     hmHL;
-	PIMAGE_DATA_DIRECTORY       pDataDirectory;
-	PIMAGE_DOS_HEADER           pDosHeader;
-	PDWORD                      pdwIAT;
-	PDWORD                      pdwINT;
-	PIMAGE_IMPORT_DESCRIPTOR    pImportDescriptor;
-	PIMAGE_IMPORT_BY_NAME       pImportName;
-	PIMAGE_OPTIONAL_HEADER      pOptionalHeader;
-	PIMAGE_NT_HEADERS           pPeHeader;
-	PSTR                        strCurrent;
-	hmHL = LoadLibraryA(strDllName); // unicode love
-
-	log_add("Attempting redirect with hooked %s", strDllName);
-
-	if (hmHL == nullptr)
-	{
-		log_add("Couldn't hook %s", strDllName);
-
-		return getchar();
-	}
-	else
-	{
-		log_add("Found the handle at address %x", hmHL);
-	}
-
-	pDosHeader = PIMAGE_DOS_HEADER(hmHL);
-	dwOffset = pDosHeader->e_lfanew;
-	pPeHeader = PIMAGE_NT_HEADERS(long(hmHL) + dwOffset);
-	pOptionalHeader = &pPeHeader->OptionalHeader;
-	pDataDirectory = pOptionalHeader->DataDirectory;
-	dwOffset = pDataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
-	pImportDescriptor = PIMAGE_IMPORT_DESCRIPTOR(long(hmHL) + dwOffset);
-
-	/*for (dwIndex = 0; true; dwIndex++)
-	{
-		log_add("%u", dwIndex);
-		dwOffset = pImportDescriptor[dwIndex].Name;
-		strCurrent = PSTR(long(hmHL) + dwOffset);
-		if (stricmp(strCurrent, strDllName) == 0)
-		{
-			break;
-		}
-	}*/
-
-	strCurrent = (PSTR)"Hmm";
-	dwIndex = 0;
-
-	while (stricmp(strCurrent, strDllName) != 0)
-	{
-		log_add("dwIndex: %u, strCurrent: %s", dwIndex, strCurrent);
-
-		dwOffset = pImportDescriptor[dwIndex].Name;
-		strCurrent = PSTR(long(hmHL) + dwOffset);
-
-		dwIndex++;
-	}
-
-	log_add("1. dwIndex is %u", dwIndex);
-
-	dwOffset = pImportDescriptor[dwIndex].FirstThunk;
-	pdwIAT = PDWORD(long(hmHL) + dwOffset);
-	dwOffset = pImportDescriptor[dwIndex].OriginalFirstThunk;
-	pdwINT = PDWORD(long(hmHL) + dwOffset);
-	for (dwIndex = 0; true; dwIndex++)
-	{
-		dwOffset = pdwINT[dwIndex];
-		pImportName = PIMAGE_IMPORT_BY_NAME(long(hmHL) + dwOffset);
-		strCurrent = PSTR(pImportName->Name);
-		if (stricmp(strCurrent, strFunctionName) == 0) break;
-	}
-
-	log_add("2. dwIndex is %u", dwIndex);
-
-	VirtualProtect(&pdwIAT[dwIndex], sizeof(DWORD), PAGE_READWRITE, &dwBackup);
-	orgProcessEvent = (PrEv)pdwIAT[dwIndex]; // ding ding
-	pdwIAT[dwIndex] = PtrToUlong(newFuncAddy);
-	VirtualProtect(&pdwIAT[dwIndex], sizeof(DWORD), dwBackup, &dwOffset);
-
-	log_add("======== Injection success =========");
-	return 1;
-}
+#endif

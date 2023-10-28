@@ -185,16 +185,16 @@ FVector cAimbot::PingCorrection(APawn* Target)
 
 void cAimbot::FireMyWeapon (void)
 {
-    bBotShooting = true;
-	mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
+	bBotShooting = true;
+	//mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
 }
 
 void cAimbot::StopMyWeapon (void)
 {
-    if ( bBotShooting )
+	if ( bBotShooting )
 	{
-	    bBotShooting = false;
-		mouse_event(MOUSEEVENTF_RIGHTUP | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+		bBotShooting = false;
+		//mouse_event(MOUSEEVENTF_RIGHTUP | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 	}
 }
 
@@ -317,16 +317,15 @@ bool cAimbot::IsVisible (APawn* Target)
 
 bool cAimbot::GoodAim ()
 {
-    if(bAutoAim == 2)
+	if(bAutoAim == 2)
 	{
-	    return (GetAsyncKeyState(VK_LBUTTON) < 0 || GetAsyncKeyState(VK_RBUTTON) < 0);
+		return false;//(GetAsyncKeyState(VK_LBUTTON) < 0 || GetAsyncKeyState(VK_RBUTTON) < 0);
 	}
 	else if(bAutoAim == 1) return true;
 
 	return false;
 }
 
-DWORD wynik2;
 void cAimbot::Trigger (APawn* Target)
 {
 	if (!bTrigger) return;
@@ -344,6 +343,6 @@ void cAimbot::Trigger (APawn* Target)
 
 	if (hitPawn && hitPawn == Target && IsEnemy(Target))
 	{
-		CreateThread(0, 0, MouseDown, 0, 0, &wynik2);
+		MouseClick(0);// Fire
 	}
 }

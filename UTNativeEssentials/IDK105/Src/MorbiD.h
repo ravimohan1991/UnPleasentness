@@ -7,7 +7,7 @@
 //But as long as you use something out of this, give me some credits that all:P
 //Have fun and read the ReadMe!
 //
-//Credits go 2:	
+//Credits go 2:
 //		Helios      : for all his tutorials an everything he ever made;)
 //		N4ps3r      : for his help whenever i need it
 //		Cheatat0r   : for support thx m8;)
@@ -18,6 +18,11 @@
 #pragma once
 
 #include "main.h"
+
+// What a hack, hehe
+#ifdef HOOK_LINUX_PLATFORM
+	#define TCHAR wchar_t
+#endif
 
 #pragma warning(disable:4700)
 #pragma warning(disable:4554)
@@ -123,28 +128,28 @@ extern UTexture* MouseTexture;
 //extern UFont   * SmallFont;
 extern UFont   * MediumFont;
 extern UFont   * BigFont;
-extern float MyMouseX; 
+extern float MyMouseX;
 extern float MyMouseY;
 
 extern bool bMenuVisible;
 
 #define MyResetCanvas \
-	GC->SpaceX=0; \
-	GC->SpaceY=0; \
-	GC->OrgX=0; \
-	GC->OrgY=0; \
-	GC->CurX=0; \
-	GC->CurY=0; \
+	myGC->SpaceX=0; \
+	myGC->SpaceY=0; \
+	myGC->OrgX=0; \
+	myGC->OrgY=0; \
+	myGC->CurX=0; \
+	myGC->CurY=0; \
 
 #define MySetPos(PosX,PosY) \
-	GC->CurX = PosX; \
-	GC->CurY = PosY; \
+	myGC->CurX = PosX; \
+	myGC->CurY = PosY; \
 
 //==============================
 //Some Definitions
 //==============================
 
-UCanvas* GC;
+UCanvas* myGC;
 
 UTexture* MouseTexture;
 UFont* MediumFont;
@@ -213,31 +218,31 @@ FColor ColorClass::DarkGray()
 
 void Drawings::GetCanvas(UCanvas* Canvas)
 {
-	GC = Canvas;
+	myGC = Canvas;
 }
 
 void Drawings::Draw(float PosX, float PosY, float Width, float Height, FColor Color)
 {
-	GC->DrawIcon(WhiteTexture, PosX, PosY, Width, Height, NULL, 1, Color.Plane(), FPlane(1, 1, 1, 1), 0);
+	myGC->DrawIcon(WhiteTexture, PosX, PosY, Width, Height, NULL, 1, Color.Plane(), FPlane(1, 1, 1, 1), 0);
 }
 
 void Drawings::DrawTransparent(float PosX, float PosY, float Width, float Height, FColor Color)
 {
-	GC->DrawIcon(WhiteTexture, PosX, PosY, Width, Height, NULL, 1, Color.Plane(), FPlane(1, 1, 1, 1), PF_Translucent);
+	myGC->DrawIcon(WhiteTexture, PosX, PosY, Width, Height, NULL, 1, Color.Plane(), FPlane(1, 1, 1, 1), PF_Translucent);
 }
 
 void Drawings::Print(float PosX, float PosY, FColor Color, const TCHAR* Text)
 {
-	FColor TempColor = GC->Color;
+	FColor TempColor = myGC->Color;
 
 	MySetPos(PosX, PosY)
 	{
-		GC->Color = Color;
+		myGC->Color = Color;
 	}
 
-	GC->WrappedPrintf(SmallFont, 0, Text);
+	myGC->WrappedPrintf(SmallFont, 0, Text);
 
-	GC->Color = TempColor;
+	myGC->Color = TempColor;
 
 	MyResetCanvas;
 }
@@ -257,8 +262,8 @@ void Drawings::CreateNewWindow(float PosX, float PosY, float Width, float Height
 	INT XL, YL;
 	UFont* theFont = SmallFont;
 
-	GC->Font = SmallFont;
-	GC->WrappedStrLenf(SmallFont, XL, YL, Title);
+	myGC->Font = SmallFont;
+	myGC->WrappedStrLenf(SmallFont, XL, YL, Title);
 
 	//OutsideBox
 	MorbidDraw.DrawOutSideBox(PosX, PosY, Width, Height);
@@ -301,13 +306,13 @@ void Drawings::CreateNewWindow(float PosX, float PosY, float Width, float Height
 		//Borders
 		//-up
 		MorbidDraw.Draw(PosX + 3, PosY + YL + 11, Width - 6.0f, 1, Color.Black());
-		
+
 		//|left
 		MorbidDraw.Draw(PosX + 3, PosY + YL + 11, 1, Height - 13.0f - YL, Color.Black());
-		
+
 		//|right
 		MorbidDraw.Draw(PosX + Width - 4, PosY + YL + 11, 1, Height - 13.0f - YL, Color.Black());
-		
+
 		//_Down
 		MorbidDraw.Draw(PosX + 3.0f, PosY + Height - 3.0f, Width - 6, 1, Color.Black());
 	}
@@ -405,23 +410,23 @@ void Drawings::CreateNewCheckBox(float PosX, float PosY, bool bOn)
 void Drawings::CreateNewMouseCursor(float& PosX, float& PosY)
 {
 	if (PosX < 0) PosX = 0;
-	if (PosX > GC->ClipX) PosX = GC->ClipX;
+	if (PosX > myGC->ClipX) PosX = myGC->ClipX;
 
 	if (PosY < 0) PosY = 0;
-	if (PosY > GC->ClipY) PosY = GC->ClipY;
+	if (PosY > myGC->ClipY) PosY = myGC->ClipY;
 
-	if (GetAsyncKeyState(VK_LBUTTON) < 0)
+	if (0)//GetAsyncKeyState(VK_LBUTTON) < 0)
 	{
 		if (MouseTexture)
 		{
-			GC->DrawIcon(MouseTexture, PosX, PosY, 32, 32, NULL, 1, Color.Red().Plane(), FPlane(1, 1, 1, 1), 0);
+			myGC->DrawIcon(MouseTexture, PosX, PosY, 32, 32, NULL, 1, Color.Red().Plane(), FPlane(1, 1, 1, 1), 0);
 		}
 	}
 	else
 	{
 		if (MouseTexture)
 		{
-			GC->DrawIcon(MouseTexture, PosX, PosY, 32, 32, NULL, 1, Color.Gray().Plane(), FPlane(1, 1, 1, 1), 0);
+			myGC->DrawIcon(MouseTexture, PosX, PosY, 32, 32, NULL, 1, Color.Gray().Plane(), FPlane(1, 1, 1, 1), 0);
 		}
 	}
 }
@@ -438,7 +443,7 @@ void MouseCheck::UpdateMouse(FLOAT DeltaTime)
 
 bool MouseCheck::CheckBoxClick(float PositionX, float PositionY, bool RightAlinedText)
 {
-	if (GetAsyncKeyState(VK_LBUTTON) < 0)
+	if (0)//GetAsyncKeyState(VK_LBUTTON) < 0)
 	{
 		if (RightAlinedText)
 		{
@@ -476,12 +481,12 @@ bool MouseCheck::CheckBoxClick(float PositionX, float PositionY, bool RightAline
 
 bool MouseCheck::ButtonClick(float PositionX, float PositionY, float Width, float Height)
 {
-	if (GetAsyncKeyState(VK_LBUTTON) < 0)
+	if (0)//GetAsyncKeyState(VK_LBUTTON) < 0)
 	{
 		if (((MyMouseX >= PositionX) && (MyMouseX <= PositionX + Width))
 			&& ((MyMouseY >= PositionY) && (MyMouseY <= PositionY + Height)))
 		{
-			Sleep(100);
+			//Sleep(100);
 			return true;
 		}
 		else
@@ -546,8 +551,8 @@ void UnrealWindow::AddCheckBoxByColor(float PositionX, float PositionY, FColor C
 	INT XL, YL;
 	UFont* theFont = SmallFont;
 
-	GC->Font = SmallFont;
-	GC->WrappedStrLenf(SmallFont, XL, YL, BoxName);
+	myGC->Font = SmallFont;
+	myGC->WrappedStrLenf(SmallFont, XL, YL, BoxName);
 
 	// Outer box has dimensions of 8 times 8
 	MorbidDraw.CreateNewCheckBoxByColor(PositionX, PositionY, Color);
@@ -559,8 +564,8 @@ void UnrealWindow::AddCheckBox(float PositionX, float PositionY, bool Option, bo
 	INT XL, YL;
 	UFont* theFont = SmallFont;
 
-	GC->Font = SmallFont;
-	GC->WrappedStrLenf(SmallFont, XL, YL, BoxName);
+	myGC->Font = SmallFont;
+	myGC->WrappedStrLenf(SmallFont, XL, YL, BoxName);
 
 	if (bRightAlinedText)
 	{
@@ -616,36 +621,36 @@ void UnrealWindow::Init()
 
 void UnrealWindow::MakeShadowText(float PosX, float PosY, const TCHAR* Text, FColor FontColor, UFont* Font)
 {
-	FColor TempColor = GC->Color;
-	GC->Color = Color.Black();
+	FColor TempColor = myGC->Color;
+	myGC->Color = Color.Black();
 
 	MySetPos(PosX - 1, PosY)
-		GC->WrappedPrintf(Font, 0, L"%s", Text);
+		myGC->WrappedPrintf(Font, 0, L"%s", Text);
 
 	MySetPos(PosX + 1, PosY)
-		GC->WrappedPrintf(Font, 0, L"%s", Text);
+		myGC->WrappedPrintf(Font, 0, L"%s", Text);
 
 	MySetPos(PosX, PosY - 1)
-		GC->WrappedPrintf(Font, 0, L"%s", Text);
+		myGC->WrappedPrintf(Font, 0, L"%s", Text);
 
 	MySetPos(PosX, PosY + 1)
-		GC->WrappedPrintf(Font, 0, L"%s", Text);
+		myGC->WrappedPrintf(Font, 0, L"%s", Text);
 
 
 	MySetPos(PosX, PosY)
-		GC->Color = FontColor;
-	GC->WrappedPrintf(Font, 0, L"%s", Text);
-	GC->Color = TempColor;
+		myGC->Color = FontColor;
+	myGC->WrappedPrintf(Font, 0, L"%s", Text);
+	myGC->Color = TempColor;
 }
 
 void UnrealWindow::DrawText(float PosX, float PosY, TCHAR* Text, FColor FontColor, UFont* Font)
 {
-	FColor TempColor = GC->Color;
+	FColor TempColor = myGC->Color;
 
 	MySetPos(PosX, PosY)
-		GC->Color = FontColor;
-	GC->WrappedPrintf(Font, 0, L"%s", Text);
-	GC->Color = TempColor;
+		myGC->Color = FontColor;
+	myGC->WrappedPrintf(Font, 0, L"%s", Text);
+	myGC->Color = TempColor;
 }
 
 
@@ -667,7 +672,7 @@ void UnrealWindow::EnableMouseFire(void)
 
 void UnrealWindow::CheckKeys(void)
 {
-	if (GetAsyncKeyState(VK_INSERT) < 0)
+	/*if (GetAsyncKeyState(VK_INSERT) < 0)
 	{
 		bMenuVisible = !bMenuVisible;
 
@@ -682,7 +687,7 @@ void UnrealWindow::CheckKeys(void)
 		bMenuVisible = false;
 		EnableMouseFire();
 		Sleep(100);
-	}
+	}*/
 }
 
 void UnrealWindow::CreateMouse()

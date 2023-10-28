@@ -59,7 +59,7 @@ class ENGINE_API UCanvas : public UObject
 	NO_DEFAULT_CONSTRUCTOR(UCanvas)
 
 	// Variables.
-	UFont*			Font;	
+	UFont*			Font;
 	FLOAT			SpaceX, SpaceY;
 	FLOAT			OrgX, OrgY;
 	FLOAT			ClipX, ClipY;
@@ -90,7 +90,7 @@ class ENGINE_API UCanvas : public UObject
 	FString			DynamicFontUnicodeRange;
 
 	// UObject interface.
-	void StaticConstructor();	
+	void StaticConstructor();
 
 	// UCanvas interface.
 	virtual void Init( UViewport* InViewport );
@@ -229,7 +229,7 @@ enum EViewportShowFlags
 };
 
 // Mouse buttons and commands.
-enum EMouseButtons	
+enum EMouseButtons
 {
 	MOUSE_Left			= 0x0001,		// Left mouse button.
 	MOUSE_Right			= 0x0002,		// Right mouse button.
@@ -339,14 +339,14 @@ class ENGINE_API UViewport : public UPlayer
 	virtual void TryRenderDevice( const TCHAR* ClassName, INT NewX, INT NewY, INT NewColorBytes, UBOOL Fullscreen ) {}
 
 	// OldUnreal additions
-	virtual void CenterAndResetMouse() {}	
+	virtual void CenterAndResetMouse() {}
 
 	// Functions.
 	void ExecuteHits( const FHitCause& Cause, BYTE* HitData, INT HitSize );
 	void PushHit( const struct HHitProxy& Hit, INT Size );
 	void PopHit( UBOOL bForce );
 	UBOOL IsWire();
-	void ExecMacro( const TCHAR* Filename, FOutputDevice& Ar=*GLog );	
+	void ExecMacro( const TCHAR* Filename, FOutputDevice& Ar=*GLog );
 
 	// UViewport inlines.
 	BYTE* _Screen( INT X, INT Y )
@@ -429,7 +429,7 @@ public:
 	INT OutlineSize{};      // Size of the outline bitmap (only used for TrueType fonts rendered on Windows using GetGlyphOutline)
 	INT BoxOriginY{};		// Horizontal Offset of the GetGlyphOutline black box within the character cell
 	INT BoxOriginX{};		// Vertical Offset of the GetGlyphOutline black box within the character cell (aka the left bearing)
-	INT RightBearing{};		// Spacing on the right side of the glyph black box 
+	INT RightBearing{};		// Spacing on the right side of the glyph black box
 	void* GlyphSurf{};	    // Precached glyph surface - SDL2_ttf needs this to calculate BlitHeight and BlitWidth
 };
 
@@ -465,7 +465,7 @@ class ENGINE_API UClient : public UObject
 	FLOAT		MinDesiredFrameRate;
 	FLOAT		FrameRateLimit;
 	INT			ParticleDensity;
-	
+
 	// Constructors.
 	UClient();
 	void StaticConstructor();

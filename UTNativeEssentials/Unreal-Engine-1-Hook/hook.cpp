@@ -78,7 +78,7 @@ bool UE1HookApp::OnInit()
 	m_Frame->Show(true);
 
 	m_InjectorLoop = false;
-	
+
 	m_FileName = m_ProcessName = wxString("");
 	m_HookStatus = HookStatus::NotReady;
 
@@ -114,8 +114,8 @@ void UE1HookApp::OnIdle(wxIdleEvent& event)
 }
 
 void UE1HookApp::SetStatus(HookStatus status)
-{ 
-	m_HookStatus = status; 
+{
+	m_HookStatus = status;
 	GetMyFrame()->GetProcessInfoPanel()->SetHookStatus(m_HookStatus);
 }
 
@@ -171,11 +171,11 @@ KelvinFrame::KelvinFrame()
 
 	{
 		// Setup manager
-		m_PaneManager.reset(new wxAuiManager(this));
+		m_PaneManager = new wxAuiManager(this);
 		m_PaneManager->SetManagedWindow(this);
 
-		m_ProcessInfoPanel.reset(new InfoPanel(this, 0));
-		m_PaneManager->AddPane(m_ProcessInfoPanel.get(), wxAuiPaneInfo().
+		m_ProcessInfoPanel = new InfoPanel(this, 0);
+		m_PaneManager->AddPane(m_ProcessInfoPanel, wxAuiPaneInfo().
 				Name(_("ProcessInfo")).
 				Caption(_("Process Information")).
 				TopDockable(true).
@@ -186,8 +186,8 @@ KelvinFrame::KelvinFrame()
 				Resizable(false).
 				Center());
 
-		m_LogPanel.reset(new LogPanel(this, 1));
-		m_PaneManager->AddPane(m_LogPanel.get(), wxAuiPaneInfo().
+		m_LogPanel = new LogPanel(this, 1);
+		m_PaneManager->AddPane(m_LogPanel, wxAuiPaneInfo().
 				Name(_("OperationLog")).
 				Caption(_("Operation Log")).
 				TopDockable(false).
@@ -536,7 +536,7 @@ void KelvinFrame::OpenProcessFile(wxString filename)
 	wxGetApp().OrStatus(HookStatus::ProcessKnown);
 
 	m_ProcessHistory->AddFileToHistory(filename);
-	
+
 	m_ProcessHistory->Save(*AppProcessConfigFile);
 	AppProcessConfigFile->Flush();
 
@@ -547,7 +547,7 @@ void KelvinFrame::OpenProcessFile(wxString filename)
 void KelvinFrame::OpenAntigenFile(wxString filename)
 {
 	m_HisAntigen->AddFileToHistory(filename);
-	
+
 	m_HisAntigen->Save(*AppAntigenConfigFile);
 	AppAntigenConfigFile->Flush();
 
@@ -731,9 +731,9 @@ BOOL SetPrivilege(LPCTSTR lpszPrivilege, BOOL bEnablePrivilege)
 	}
 
 	// Enable the privilege or disable all privileges.
-	if (!AdjustTokenPrivileges(hToken,  // 
+	if (!AdjustTokenPrivileges(hToken,  //
 	  FALSE,  // TURE
-	  &tp,        // TOKEN_PRIBILEGES 
+	  &tp,        // TOKEN_PRIBILEGES
 	  sizeof(TOKEN_PRIVILEGES),   //
 	  (PTOKEN_PRIVILEGES)NULL,    //
 	  (PDWORD)NULL))
@@ -833,7 +833,7 @@ BOOL EjectDll(DWORD dwPID, LPCTSTR szDllPath)
 	hThread = CreateRemoteThread(hProcess, NULL, 0,
 	  pThreadProc, me.modBaseAddr, 0, NULL);
 	WaitForSingleObject(hThread, INFINITE);
-	
+
 	CloseHandle(hThread);
 	CloseHandle(hProcess);
 

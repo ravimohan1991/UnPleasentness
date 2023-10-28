@@ -111,7 +111,7 @@ public:
 		return (D ^ (D>>12) ^ (D>>24)) & (HASH_COUNT-1);
 	}
 	BYTE* Get( QWORD Id, FCacheItem*& Item, INT Alignment=DEFAULT_ALIGNMENT )
-	{	
+	{
 		guardSlow(FMemCache::Get);
 		clockSlow(GetCycles);
 #if DO_SLOW_CLOCK

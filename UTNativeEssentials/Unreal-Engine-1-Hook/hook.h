@@ -21,6 +21,8 @@
 
 #pragma once
 
+#define PNG_CALLBACK(type, name, args) type (PNGCBAPI name) PNGARG(args)
+
 #include <wx/wx.h>
 #include <wx/fileconf.h>
 
@@ -118,7 +120,7 @@ public:
 
 	/**
 	 * @brief For setting multiple status flags
-	 * 
+	 *
 	 * So that we may know if both process and antigen are loaded
 	 */
 	inline void OrStatus(HookStatus status) { SetStatus(HookStatus(m_HookStatus | status)); }
@@ -223,7 +225,7 @@ public:
 	 * @brief Select and cache the antigen
 	 *
 	 * @param filename		The absolute path of file (DLL or SO or DYLIB)
-	 * 
+	 *
 	 * @todo write injection process for platforms
 	 */
 	void OpenAntigenFile(wxString filename);
@@ -236,7 +238,7 @@ public:
 	/**
 	 * @brief Getter for Log panel
 	 */
-	std::shared_ptr<LogPanel> GetLogPanel() const { return m_LogPanel; }
+	LogPanel* GetLogPanel() const { return m_LogPanel; }
 
 	/**
 	 * @brief Logs a message in the application logging area followed by new line;
@@ -248,7 +250,7 @@ public:
 	/**
 	 * @brief getter for m_ProcessInfoPanel
 	 */
-	std::shared_ptr<InfoPanel> GetProcessInfoPanel() const { return m_ProcessInfoPanel; }
+	InfoPanel* GetProcessInfoPanel() const { return m_ProcessInfoPanel; }
 
 	/**
 	 * @brief Getter for m_ProcessHistory
@@ -269,7 +271,7 @@ private:
 	 * one pane at a time, and then "committing" all of the changes at \n
 	 * once by calling Update().
 	 */
-	std::shared_ptr<wxAuiManager> m_PaneManager;
+	wxAuiManager* m_PaneManager;
 
 	/**
 	 * @brief Pane for process information
@@ -278,7 +280,7 @@ private:
 	 *
 	 * @see InfoPanel
 	 */
-	std::shared_ptr<InfoPanel> m_ProcessInfoPanel;
+	InfoPanel* m_ProcessInfoPanel;
 
 	/**
 	 * @brief Pane for logging operations
@@ -286,7 +288,7 @@ private:
 	 * Shows the logs of operations being performed for antigen injection
 	 * of the custom shared object code (in most of your language(s), DLL)
 	 */
-	std::shared_ptr<LogPanel> m_LogPanel;
+	LogPanel* m_LogPanel;
 
 	/**
 	 * @brief Caching the process history
