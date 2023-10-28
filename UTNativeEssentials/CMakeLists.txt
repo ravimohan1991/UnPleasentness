@@ -191,7 +191,7 @@ if(LINUX)
 	if(OLDUNREAL_ARM64)
 	   add_compile_definitions(_ARM64_)
 	endif()
-	add_compile_definitions(DETOUR_DEBUG)
+	#add_compile_definitions(DETOUR_DEBUG) uncomment this for ut-bin code injection
 	add_subdirectory(MiscLibs/LinuxDetours)
 	add_subdirectory(MiscLibs/injector)
 elseif(WINDOWS)
@@ -248,6 +248,8 @@ elseif(WINDOWS)
 endif()
 target_link_libraries(Morbid PUBLIC Core Engine Detours)
 target_link_libraries(UEHook PUBLIC wx::core wx::aui)
-target_link_libraries(DetoursExampule PUBLIC Detours)
+
+find_package(Threads REQUIRED)
+target_link_libraries(DetoursExampule PUBLIC LinuxDetours glog Threads::Threads)
 
 # end of CMakeLists.txt ...

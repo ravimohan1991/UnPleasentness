@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.0.0)
 
 project(DetoursExampule)
 
-add_library(DetoursExampule SHARED ${CMAKE_CURRENT_SOURCE_DIR}/Example.cpp)
+add_executable(DetoursExampule ${CMAKE_CURRENT_SOURCE_DIR}/Example.cpp)
 
 # INTERFACE (Something that Consumers require but Producers don't)
 # Since I am a library coder here, I am the Producer
@@ -18,7 +18,7 @@ add_library(DetoursExampule SHARED ${CMAKE_CURRENT_SOURCE_DIR}/Example.cpp)
 target_include_directories(DetoursExampule
     PRIVATE
         # where the library itself will look for its internal headers
-        ${CMAKE_CURRENT_SOURCE_DIR}/../MiscLibs/Detours/src
+       ${CMAKE_CURRENT_SOURCE_DIR}/../MiscLibs/LinuxDetours/LinuxDetours
     PUBLIC
         # where top-level project will look for the library's public headers
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -26,4 +26,4 @@ target_include_directories(DetoursExampule
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_compile_definitions(DetoursExampule PUBLIC DetoursExampule)
+#target_compile_definitions(DetoursExampule PUBLIC DetoursExampule)
