@@ -450,7 +450,7 @@ bool MouseCheck::CheckBoxClick(float PositionX, float PositionY, bool RightAline
 			if (((MyMouseX >= PositionX) && (MyMouseX <= PositionX + 10))
 				&& ((MyMouseY >= PositionY) && (MyMouseY <= PositionY + 10)))
 			{
-				Sleep(100);
+				//Sleep(100);
 				return true;
 			}
 			else
@@ -463,7 +463,7 @@ bool MouseCheck::CheckBoxClick(float PositionX, float PositionY, bool RightAline
 			if (((MyMouseX >= PositionX + 65) && (MyMouseX <= PositionX + 75))
 				&& ((MyMouseY >= PositionY + 1) && (MyMouseY <= PositionY + 11)))
 			{
-				Sleep(100);
+				//Sleep(100);
 				return true;
 			}
 			else

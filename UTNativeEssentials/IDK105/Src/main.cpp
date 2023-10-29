@@ -19,7 +19,7 @@
     Credits: HelioS, Grief, Saphex, r00t.
 */
 #include "main.h"
-#include "detours.h"
+//#include "detours.h"
 #include "cRadar.h"
 #include "cMenu.h"
 #include "cAimbot.h"
@@ -429,26 +429,22 @@ void MyPostRender (FSceneNode* FS)
 	}
 }
 
-typedef void(*tPostRender)(FSceneNode *);
-tPostRender oPostRender = NULL;
+typedef void tPostRender (FSceneNode *);
+tPostRender* oPostRender = NULL;
 
 void xPostRender(FSceneNode *FS)
 {
-	MyPostRender(FS);
+	//MyPostRender(FS);
 
 	// For linux based testing
 	GLog->Logf(TEXT("Detour is in action"));
 }
 
-DWORD WINAPI LoaderThread(LPVOID lpParam)
+#ifdef HOOK_WINDOWS_PLATFORM
+DWORD WINAPI LoaderThread(void* lpParam)
 {
-#ifdef HOOK_WINDOWS_PLATFORM
 	oPostRender = (tPostRender)DetourFindFunction("Render.dll", "?PostRender@URender@@UAEXPAUFSceneNode@@@Z");
-#elif HOOK_LINUX_PLATFORM
-	oPostRender = (tPostRender)DetourFindFunction("Render.so", "_ZN7URender10PostRenderEP10FSceneNode");
-#endif
 
-#ifdef HOOK_WINDOWS_PLATFORM
 	DetourRestoreAfterWith();
 	//log_add("RestoreAfter %i", GetLastError());
 
@@ -460,125 +456,60 @@ DWORD WINAPI LoaderThread(LPVOID lpParam)
 
 	LONG errorCode = DetourAttach(&(LPVOID&)oPostRender, xPostRender);
 	DetourTransactionCommit();
-#elif HOOK_LINUX_PLATFORM
-	TRACED_HOOK_HANDLE aHandle;
-	LONG errorCode = DetourInstallHook(&oPostRender, (void*)&xPostRender, NULL, aHandle);
-#endif
 
 	return 1;
 }
+#endif
 
 #ifdef HOOK_LINUX_PLATFORM
-
-unsigned int sleep_detour(unsigned int seconds)
-{
-    GLog->Logf(TEXT("detours_test: Called sleep_detour"));
-    return sleep(seconds);
-}
-unsigned int test_detour_b(unsigned int seconds, unsigned int a, unsigned int b, unsigned int c, unsigned int d, unsigned int e)
-{
-    GLog->Logf(TEXT("detours_test: Called test_detour_b"));
-    return seconds + 1;
-}
-unsigned int test_detour_a(unsigned int seconds, unsigned int a, unsigned int b, unsigned int c, unsigned int d, unsigned int e)
-{
-    GLog->Logf(TEXT("detours_test: Detoured function 'test_detour_b' -> function 'test_detour_a' with params: %i, %i, %i, %i, %i"), a, b, c, d, e);
-    return test_detour_b(seconds + 2, a, b, c, d, e);
-}
-
-VOID* test_runner(void*)
-{
-    GLog->Logf(TEXT("detours_test: Function 'test_detour_b' returned %i"), test_detour_b(1, 2, 3, 4, 5, 6));
-
-    GLog->Logf(TEXT("detours_test: Calling sleep for 1 second"));
-    sleep(1);
-
-     GLog->Logf(TEXT("detours_test: Calling sleep again for 2 seconds"));
-    sleep(2);
-
-    GLog->Logf(TEXT("detours_test: Done sleeping\n"));
-
-    return NULL;
-}
-
-int test_glog(char * argv)
-{
-    GLog->Logf(TEXT("detours_test: Starting detours tests"));
-    return 1;
-}
 
 /*
  * loadMsg()
  *
  * This function is automatically called when the sample library is injected
- * into a process. It calls hello() to output a message indicating that the
- * library has been loaded.
+ * into a process. Courtsey: https://github.com/gaffe23/linux-inject/blob/master/sample-library.c
  *
  */
 #include <dlfcn.h>
 #include <sys/types.h>
+
+extern "C"
+{
+#include "cdl.h"
+}
+
 __attribute__((constructor))
 void loadMsg()
 {
 	void* handle = NULL;
-	handle = dlopen("/home/the_cowboy/Unreal Tournament GOTY/System/Render.so", RTLD_NOW);
+	handle = dlopen("/home/the_cowboy/Unreal Tournament GOTY/System/Render.so", RTLD_NOW);// try different modes?
 
 	if(handle == NULL)
 	{
-		GLog->Logf(TEXT("##################### could't load .so"));
+		GLog->Logf(TEXT("[Linux IDK]: Could't load Render.so"));
 	}
 
-	oPostRender = (tPostRender)dlsym(handle, "_ZN7URender10PostRenderEP10FSceneNode");
+	oPostRender = (tPostRender*)dlsym(handle, "_ZN7URender10PostRenderEP10FSceneNode");
 
 	if(oPostRender == NULL)
 	{
-		GLog->Logf(TEXT("##################### Couldn't find the address"));
+		GLog->Logf(TEXT("[Linux IDK]: Couldn't find the address of the function URender::PostRender"));
 	}
 	else
 	{
-		GLog->Logf(TEXT("##################### Success: Found address %x for hooking"), oPostRender);
+		GLog->Logf(TEXT("[Linux IDK]: Success! Found address %x (URender::PostRender) for a wicked detour"), oPostRender);
 	}
 
-	/*DetourTransactionBegin();
-	DetourUpdateThread(gettid());
-	LONG errorCode = DetourAttach((void**)&oPostRender, (PVOID)xPostRender);
-	DetourTransactionCommit();*/
+	struct cdl_jmp_patch jmp_patch = {};
+	struct cdl_swbp_patch swbp_patch = {};
 
-	DetourBarrierProcessAttach();
-	DetourCriticalInitialize();
+	jmp_patch = cdl_jmp_attach((void**)&oPostRender, (void*)xPostRender);
 
-	LONG test_detour_callback = 0;
-	    LONG sleep_detour_callback = 0;
-	    TRACED_HOOK_HANDLE test_detour_handle = new HOOK_TRACE_INFO();
-	    TRACED_HOOK_HANDLE sleep_detour_handle = new HOOK_TRACE_INFO();
-
-	    GLog->Logf(TEXT("##################### error code is %d"), DetourInstallHook((void*)test_detour_b, (void*)test_detour_a, &test_detour_callback, test_detour_handle));
-	    GLog->Logf(TEXT("##################### error code is %d"), DetourInstallHook((void*)sleep, (void*)sleep_detour, &sleep_detour_callback, sleep_detour_handle));
-
-	    ULONG ret = DetourSetExclusiveACL(new ULONG(), 1, (TRACED_HOOK_HANDLE)test_detour_handle);
-	    ret = DetourSetExclusiveACL(new ULONG(), 1, (TRACED_HOOK_HANDLE)sleep_detour_handle);
-
-	    pthread_t t;
-	    pthread_create(&t, NULL, test_runner, NULL);
-	    pthread_join(t, NULL);
-
-	    DetourUninstallHook(test_detour_handle);
-	    DetourUninstallHook(sleep_detour_handle);
-
-	    delete test_detour_handle;
-	    delete sleep_detour_handle;
-
-	    sleep(1);
-
-	    DetourCriticalFinalize();
-	    DetourBarrierProcessDetach();
-
-	/*LONG test_detour_callback = 0;
-	TRACED_HOOK_HANDLE test_detour_handle = new HOOK_TRACE_INFO();
-
-	LONG errorCode = DetourInstallHook((void*)oPostRender, (void*)xPostRender, &test_detour_callback, test_detour_handle);
-
-	GLog->Logf(TEXT("##################### error code is %d"), errorCode);*/
+	if(jmp_patch.active)
+	{
+		GLog->Logf(TEXT("[Linux IDK]: detoured Render.so PostRender with our own, hehe"));
+		//cdl_jmp_dbg(&jmp_patch);
+	}
 }
 #endif
 

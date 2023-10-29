@@ -11,7 +11,8 @@ project(IDK)
 
 file(GLOB IDK_HEADERS Src/*.h)
 
-add_library(IDK SHARED Src/main.cpp ${IDK_HEADERS})
+add_library(IDK SHARED Src/main.cpp ${IDK_HEADERS}
+	Src/cdl.c)
 
 # INTERFACE (Something that Consumers require but Producers don't)
 # Since I am a library coder here, I am the Producer
@@ -21,9 +22,7 @@ target_include_directories(IDK
     PRIVATE
         # where the library itself will look for its internal headers
         ${CMAKE_CURRENT_SOURCE_DIR}/Src
-	if(LINUX)
-		${CMAKE_CURRENT_SOURCE_DIR}/../MiscLibs/LinuxDetours/LinuxDetours
-	elseif(WINDOWS)
+	if(WINDOWS)
 		${CMAKE_CURRENT_SOURCE_DIR}/../MiscLibs/Detours/src
 	endif()
     PUBLIC

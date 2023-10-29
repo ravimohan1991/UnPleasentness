@@ -178,25 +178,15 @@ add_compile_definitions(MOD_BUILD)
 ################################################################################
 # Including External and (or) non Epic libraries
 ################################################################################
+
+# hmm, off-pattern since agnostic injector is used in linux only and
+# linux detours is included in windows too. May resolve this in future
 if(LINUX)
-	if(OLDUNREAL_X86)
-	   add_compile_definitions(x86)
-	endif()
-	if(OLDUNREAL_AMD64)
-	   add_compile_definitions(_AMD64_)
-	endif()
-	if(OLDUNREAL_ARM)
-	   add_compile_definitions(_ARM_)
-	endif()
-	if(OLDUNREAL_ARM64)
-	   add_compile_definitions(_ARM64_)
-	endif()
-	#add_compile_definitions(DETOUR_DEBUG) uncomment this for ut-bin code injection
-	add_subdirectory(MiscLibs/LinuxDetours)
 	add_subdirectory(MiscLibs/injector)
 elseif(WINDOWS)
 	add_subdirectory(MiscLibs/Detours)
 endif()
+
 # wxWidgets settings
 set(wxUSE_STL ON CACHE INTERNAL "")
 set(wxUSE_REGEX OFF CACHE INTERNAL "")
@@ -237,19 +227,17 @@ target_include_directories(Morbid
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/Engine/Inc)
 
-
 ################################################################################
 # Target Linking Rules
 ################################################################################
 if(LINUX)
-	target_link_libraries(IDK PUBLIC Core Engine LinuxDetours)
+	target_link_libraries(IDK PUBLIC Core Engine)
 elseif(WINDOWS)
 	target_link_libraries(IDK PUBLIC Core Engine Detours)
 endif()
 target_link_libraries(Morbid PUBLIC Core Engine Detours)
 target_link_libraries(UEHook PUBLIC wx::core wx::aui)
 
-find_package(Threads REQUIRED)
-target_link_libraries(DetoursExampule PUBLIC LinuxDetours glog Threads::Threads)
+target_link_libraries(DetoursExampule PUBLIC LinuxDetours)
 
 # end of CMakeLists.txt ...
