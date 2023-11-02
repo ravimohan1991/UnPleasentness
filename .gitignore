@@ -3,6 +3,7 @@ UnpleasentnessBin
 UTNativeLightHouse
 
 build-UTNativeEssentials-Desktop_Qt_6_3_0_GCC_64bit-Debug
+build-UTNativeEssentials-Desktop_Qt_6_3_0_GCC_64bit-Release
 
 # File extensions
 *.txt.user

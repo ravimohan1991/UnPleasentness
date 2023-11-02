@@ -624,7 +624,8 @@ void loadMsg()
 
 	//oPostRender = (tPostRender*)dlsym(handle, "PostRender");
 
-	oPostRender = (tPostRender*)dlsym(handle, "_ZN7URender10PostRenderEP10FSceneNode");
+
+	//oPostRender = (tPostRender*)dlsym(handle, "_ZN7URender10PostRenderEP10FSceneNode");
 	//oPostRender = (tPostRender*)dlsym(handle, "_ZN7UObject12ProcessEventEP9UFunctionPvS2_");
 
 	if(oPostRender == NULL)
