@@ -11,8 +11,7 @@ project(IDK)
 
 file(GLOB IDK_HEADERS Src/*.h)
 
-add_library(IDK SHARED Src/main.cpp ${IDK_HEADERS}
-	Src/cdl.c)
+add_library(IDK SHARED Src/main.cpp ${IDK_HEADERS})
 
 # INTERFACE (Something that Consumers require but Producers don't)
 # Since I am a library coder here, I am the Producer

@@ -107,6 +107,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${REPOSITORYROOT}/UnpleasentnessBin/${PLATFO
 # Set compiler and linker flags
 ################################################################################
 
+add_compile_definitions(ENGINE_ARCHITECTURE="${OLDUNREAL_CPU}")
+
 if(WINDOWS)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS=1)
   add_compile_definitions(_CRT_NO_VA_START_VALIDATION)
@@ -119,10 +121,13 @@ endif()
 
 if(LINUX)
   add_compile_definitions(__LINUX_ARM__)
-  add_compile_definitions(WIN32=1)
+  #add_compile_definitions(WIN32=1)
   add_compile_definitions(HOOK_LINUX_PLATFORM)
   add_compile_definitions(UNICODE=1)
   add_compile_definitions(_UNICODE=1)
+  add_compile_definitions(_REENTRANT=1)
+  add_compile_definitions(HAVE_PRAGMA_PACK=1)
+  add_definitions(-fPIC)
 endif()
 
 if(MACOS)

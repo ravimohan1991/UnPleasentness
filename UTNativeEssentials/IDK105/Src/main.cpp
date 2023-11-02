@@ -93,7 +93,8 @@ void Init (UCanvas* Canvas)
 // Windows specific
 void CheckKeys (UCanvas* Canvas)
 {
-	/*if (GetAsyncKeyState(VK_NUMPAD0) & 0x01)
+#ifdef HOOK_WINDOWS_PLATFORM
+	if (GetAsyncKeyState(VK_NUMPAD0) & 0x01)
 	{
 		bHook = !bHook;
 	}
@@ -136,7 +137,8 @@ void CheckKeys (UCanvas* Canvas)
 	else if (GetAsyncKeyState(VK_END) & 0x01)
 	{
 		Scale -= 0.1f;
-	}*/
+	}
+#endif
 }
 
 void GetCameraLocation (FVector &InputLocation, FRotator &InputRotation)
@@ -268,6 +270,68 @@ void inline PawnIterator(FSceneNode* FS)
 	}
 }
 
+void inline PawnIteratorLin()
+{
+	APawn* BestTarget = NULL;
+
+	if (!Me->Level->PawnList)
+	{
+		return;
+	}
+
+	{
+		// End of line on Linux for me since following instructions are segfaulting
+		// going back to usual uscript hacks on Linux, ACE <- hehe
+		/*struct APlayerPawn_eventPlayerCalcView_Parms
+		{
+			class AActor* ViewActor;
+			FVector CameraLocation;
+			FRotator CameraRotation;
+		};
+
+		APlayerPawn_eventPlayerCalcView_Parms Parms;
+
+		if(Me == NULL)return;
+
+		Parms.ViewActor = Me;*/
+
+		//GLog->Logf(TEXT("pCanvas: "));
+		//GLog->Log(FString("c"));
+
+		//UFunction* GetCameraLocation = pCanvas->FindFunction(L"PlayerCalcView");//pCanvas->FindFunctionChecked(FName(L"Engine_PlayerCalcView")); //<------ Uncomment this line segfaults
+
+		/*if(GetCameraLocation == NULL)return;
+
+		Me->ProcessEvent(NULL, &Parms, 0);
+
+		MyCameraLocation = Parms.CameraLocation;
+		MyCameraRotation = Parms.CameraRotation;*/
+	}
+
+	for(APawn* Pawn = Me->Level->PawnList; Pawn->nextPawn != nullptr; Pawn = Pawn->nextPawn)
+	{
+		APawn *Target = Pawn;
+
+		FCheckResult R;
+		FVector X, Y, Z, Start, Dir, HisPos;
+
+		/*GetAxes(MyCameraRotation, X, Y, Z);
+		Start = Me->Location + Me->EyeHeight * Z;
+		Dir = X * Me->CollisionRadius;
+
+		Me->XLevel->TraceVisible(Dir, R, Me, Start, TRACE_Pawns | TRACE_Level, 10000);
+
+		APawn* hitPawn = Cast<APawn>(R.Actor);
+
+		if (hitPawn && hitPawn == Target && IsEnemy(Target))
+		{
+			MouseClick(0);// Fire
+			GLog->Logf(TEXT("Found aim"));
+		}*/
+
+	}
+}
+
 float setting1x, setting1y;
 float setting2x, setting2y;
 float setting3x, setting3y;
@@ -391,6 +455,17 @@ void LookForMouseInput()
 	}
 }
 
+void MyPostRenderLin(FSceneNode* FS)
+{
+	UCanvas* aCanvas = FS->Viewport->Canvas;
+
+	Me = FS->Viewport->Actor;
+
+	APlayerReplicationInfo* arepinfo = Me->PlayerReplicationInfo;
+
+	PawnIteratorLin();
+}
+
 void MyPostRender (FSceneNode* FS)
 {
 	UCanvas* Canvas = FS->Viewport->Canvas;
@@ -403,7 +478,6 @@ void MyPostRender (FSceneNode* FS)
 	Me = Canvas->Viewport->Actor;
 
 	PawnIterator(FS);
-	CheckKeys(Canvas);
 
 	Init(Canvas);
 	MWindow.MorbidWindowsMain(Canvas);
@@ -432,12 +506,45 @@ void MyPostRender (FSceneNode* FS)
 typedef void tPostRender (FSceneNode *);
 tPostRender* oPostRender = NULL;
 
-void xPostRender(FSceneNode *FS)
-{
-	//MyPostRender(FS);
+typedef void  tProcessEvent(class UFunction* Function, void* Parms, void* Result);
+tProcessEvent* original_oProcessEvent = NULL;
 
-	// For linux based testing
-	GLog->Logf(TEXT("Detour is in action"));
+tProcessEvent* oProcessEvent = NULL;
+
+void pPostRender()
+{
+	if(pCanvas != NULL)
+	{
+		GLog->Logf(TEXT("inside canvas"));
+		PawnIteratorLin();
+	}
+}
+
+void modified_oProcessEvent(class UFunction* Function, void* Parms, void* Result)
+{
+	if (!doonce)
+	{
+		AHUD_eventPostRender_Parms* PostRend = NULL; // storage for hooked PostRender
+		PostRend = static_cast<AHUD_eventPostRender_Parms*>(Parms); // hook PostRender
+
+		if(PostRend != NULL)
+		{
+			doonce = true;
+			pCanvas = PostRend->Canvas; // make hooked canvas = our private canvas
+
+			Me = pCanvas->Viewport->Actor;
+		}
+	}
+	if(pCanvas != NULL)
+	{
+		pPostRender(); // call hooked PostRender
+	}
+}
+
+void xoPostRender(FSceneNode *FS)
+{
+	//oPostRender(FS);
+	MyPostRender(FS);
 }
 
 #ifdef HOOK_WINDOWS_PLATFORM
@@ -473,23 +580,49 @@ DWORD WINAPI LoaderThread(void* lpParam)
 #include <dlfcn.h>
 #include <sys/types.h>
 
+
 extern "C"
 {
-#include "cdl.h"
+	// run ut with command LD_PRELOAD=../UnPleasentness/UnpleasentnessBin/Linux/amd64/Release/libIDK.so ./ut-bin
+	void _ZN7UObject12ProcessEventEP9UFunctionPvS2_(class UFunction* Function, void* Parms, void* Result)//_ZN7URender10PostRenderEP10FSceneNode(FSceneNode *FS)
+	{
+		void* handle = dlopen("/home/the_cowboy/Unreal Tournament GOTY/System/Core.so", RTLD_NOW);
+
+		//oPostRender = (tPostRender*)dlsym(handle, "_ZN7URender10PostRenderEP10FSceneNode");
+
+		oProcessEvent = (tProcessEvent*)dlsym(handle, "_ZN7UObject12ProcessEventEP9UFunctionPvS2_");
+
+		/*if (oPostRender)
+		{
+			//oPostRender(FS);
+			modified_oPostRender(FS);
+		}*/
+
+		if(oProcessEvent)
+		{
+			oProcessEvent(Function, Parms, Result);
+			modified_oProcessEvent(Function, Parms, Result);
+		}
+	}
 }
 
-__attribute__((constructor))
+// scratch work
+//__attribute__((constructor))
 void loadMsg()
 {
 	void* handle = NULL;
-	handle = dlopen("/home/the_cowboy/Unreal Tournament GOTY/System/Render.so", RTLD_NOW);// try different modes?
+	handle = dlopen("/home/the_cowboy/Unreal Tournament GOTY/System/Render.so", RTLD_LAZY);// try different modes?
+	//handle = dlopen("/home/the_cowboy/Unreal Tournament GOTY/System/Core.so", RTLD_NOW);
 
 	if(handle == NULL)
 	{
 		GLog->Logf(TEXT("[Linux IDK]: Could't load Render.so"));
 	}
 
+	//oPostRender = (tPostRender*)dlsym(handle, "PostRender");
+
 	oPostRender = (tPostRender*)dlsym(handle, "_ZN7URender10PostRenderEP10FSceneNode");
+	//oPostRender = (tPostRender*)dlsym(handle, "_ZN7UObject12ProcessEventEP9UFunctionPvS2_");
 
 	if(oPostRender == NULL)
 	{
@@ -500,17 +633,21 @@ void loadMsg()
 		GLog->Logf(TEXT("[Linux IDK]: Success! Found address %x (URender::PostRender) for a wicked detour"), oPostRender);
 	}
 
-	struct cdl_jmp_patch jmp_patch = {};
-	struct cdl_swbp_patch swbp_patch = {};
-
-	jmp_patch = cdl_jmp_attach((void**)&oPostRender, (void*)xPostRender);
+	/*jmp_patch = cdl_jmp_attach((void**)&oPostRender, (void*)modified_oPostRender);
 
 	if(jmp_patch.active)
 	{
 		GLog->Logf(TEXT("[Linux IDK]: detoured Render.so PostRender with our own, hehe"));
-		//cdl_jmp_dbg(&jmp_patch);
+		cdl_jmp_dbg(&jmp_patch);
 	}
+
+	uslngPageSize = GETPAGESIZE() ;
+	uslngPageMask = ( ~(uslngPageSize - 1) ) ;
+
+	HOTPATCH(oPostRender) ;*/
 }
+
+
 #endif
 
 #ifdef HOOK_WINDOWS_PLATFORM
