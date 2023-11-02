@@ -443,14 +443,20 @@ void MouseCheck::UpdateMouse(FLOAT DeltaTime)
 
 bool MouseCheck::CheckBoxClick(float PositionX, float PositionY, bool RightAlinedText)
 {
-	if (0)//GetAsyncKeyState(VK_LBUTTON) < 0)
+#ifdef HOOK_WINDOWS_PLATFORM 
+	if (GetAsyncKeyState(VK_LBUTTON) < 0)
+#else
+	if(0)
+#endif
 	{
 		if (RightAlinedText)
 		{
 			if (((MyMouseX >= PositionX) && (MyMouseX <= PositionX + 10))
 				&& ((MyMouseY >= PositionY) && (MyMouseY <= PositionY + 10)))
 			{
-				//Sleep(100);
+#ifdef HOOK_WINDOWS_PLATFORM
+				Sleep(100);
+#endif
 				return true;
 			}
 			else
@@ -463,7 +469,9 @@ bool MouseCheck::CheckBoxClick(float PositionX, float PositionY, bool RightAline
 			if (((MyMouseX >= PositionX + 65) && (MyMouseX <= PositionX + 75))
 				&& ((MyMouseY >= PositionY + 1) && (MyMouseY <= PositionY + 11)))
 			{
-				//Sleep(100);
+#ifdef HOOK_WINDOWS_PLATFORM 
+				Sleep(100);
+#endif
 				return true;
 			}
 			else
@@ -481,12 +489,18 @@ bool MouseCheck::CheckBoxClick(float PositionX, float PositionY, bool RightAline
 
 bool MouseCheck::ButtonClick(float PositionX, float PositionY, float Width, float Height)
 {
-	if (0)//GetAsyncKeyState(VK_LBUTTON) < 0)
+#ifdef HOOK_WINDOWS_PLATFORM 
+	if (GetAsyncKeyState(VK_LBUTTON) < 0)
+#else
+	if(0)
+#endif
 	{
 		if (((MyMouseX >= PositionX) && (MyMouseX <= PositionX + Width))
 			&& ((MyMouseY >= PositionY) && (MyMouseY <= PositionY + Height)))
 		{
-			//Sleep(100);
+#ifdef HOOK_WINDOWS_PLATFORM 
+			Sleep(100);
+#endif
 			return true;
 		}
 		else
@@ -625,20 +639,20 @@ void UnrealWindow::MakeShadowText(float PosX, float PosY, const TCHAR* Text, FCo
 	myGC->Color = Color.Black();
 
 	MySetPos(PosX - 1, PosY)
-		myGC->WrappedPrintf(Font, 0, L"%s", Text);
+	myGC->WrappedPrintf(Font, 0, L"%s", Text);
 
 	MySetPos(PosX + 1, PosY)
-		myGC->WrappedPrintf(Font, 0, L"%s", Text);
+	myGC->WrappedPrintf(Font, 0, L"%s", Text);
 
 	MySetPos(PosX, PosY - 1)
-		myGC->WrappedPrintf(Font, 0, L"%s", Text);
+	myGC->WrappedPrintf(Font, 0, L"%s", Text);
 
 	MySetPos(PosX, PosY + 1)
-		myGC->WrappedPrintf(Font, 0, L"%s", Text);
+	myGC->WrappedPrintf(Font, 0, L"%s", Text);
 
 
 	MySetPos(PosX, PosY)
-		myGC->Color = FontColor;
+	myGC->Color = FontColor;
 	myGC->WrappedPrintf(Font, 0, L"%s", Text);
 	myGC->Color = TempColor;
 }
@@ -648,7 +662,7 @@ void UnrealWindow::DrawText(float PosX, float PosY, TCHAR* Text, FColor FontColo
 	FColor TempColor = myGC->Color;
 
 	MySetPos(PosX, PosY)
-		myGC->Color = FontColor;
+	myGC->Color = FontColor;
 	myGC->WrappedPrintf(Font, 0, L"%s", Text);
 	myGC->Color = TempColor;
 }
@@ -672,7 +686,8 @@ void UnrealWindow::EnableMouseFire(void)
 
 void UnrealWindow::CheckKeys(void)
 {
-	/*if (GetAsyncKeyState(VK_INSERT) < 0)
+#ifdef HOOK_WINDOWS_PLATFORM 
+	if (GetAsyncKeyState(VK_INSERT) < 0)
 	{
 		bMenuVisible = !bMenuVisible;
 
@@ -687,7 +702,8 @@ void UnrealWindow::CheckKeys(void)
 		bMenuVisible = false;
 		EnableMouseFire();
 		Sleep(100);
-	}*/
+	}
+#endif
 }
 
 void UnrealWindow::CreateMouse()

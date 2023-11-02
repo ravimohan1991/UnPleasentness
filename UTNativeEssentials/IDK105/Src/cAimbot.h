@@ -139,32 +139,32 @@ FVector cAimbot::MuzzleCorrection (float Time)
 
 FVector cAimbot::AimHeight (AActor* Target)
 {
-    FVector HisPos = Target->Location;
+	FVector HisPos = Target->Location;
 
 	if ( MyWeapon == WP_RocketLauncher )
 	{
-	    HisPos.Z -= 23;
+		HisPos.Z -= 23;
 	}
 	else
 	{
-        if ( FString(*Target->AnimSequence).InStr(TEXT("Duck")) != -1 )
-	    {
-		    HisPos.Z += Target->CollisionHeight * 0.2;
-	    }
+		if ( FString(*Target->AnimSequence).InStr(TEXT("Duck")) != -1 )
+		{
+			HisPos.Z += Target->CollisionHeight * 0.2;
+		}
 
-	    else if ( FString(*Target->AnimSequence).InStr(TEXT("Swim")) != -1 )
-	    {
-		    HisPos.Z += Target->CollisionHeight * 0.15;
-	    }
+		else if ( FString(*Target->AnimSequence).InStr(TEXT("Swim")) != -1 )
+		{
+			HisPos.Z += Target->CollisionHeight * 0.15;
+		}
 
-	    else if ( FString(*Target->AnimSequence).InStr(TEXT("Jump")) != -1 )
-	    {
-		    HisPos.Z += Target->CollisionHeight * 0.765;
-	    }
+		else if ( FString(*Target->AnimSequence).InStr(TEXT("Jump")) != -1 )
+		{
+			HisPos.Z += Target->CollisionHeight * 0.765;
+		}
 
 		else
 		{
-            HisPos.Z += Target->CollisionHeight * 0.7;
+			HisPos.Z += Target->CollisionHeight * 0.7;
 		}
 	}
 	return HisPos;
@@ -172,7 +172,7 @@ FVector cAimbot::AimHeight (AActor* Target)
 
 FVector cAimbot::PingCorrection(APawn* Target)
 {
-    FVector V = FVector(0,0,0);
+	FVector V = FVector(0,0,0);
 	if ( Me->Role < ROLE_Authority)
 	{
 		V = Target->Velocity * Me->PlayerReplicationInfo->Ping / 1000;
@@ -186,7 +186,9 @@ FVector cAimbot::PingCorrection(APawn* Target)
 void cAimbot::FireMyWeapon (void)
 {
 	bBotShooting = true;
-	//mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
+#ifdef HOOK_WINDOWS_PLATFORM
+	mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
+#endif // HOOK_WINDOWS_PLATFORM
 }
 
 void cAimbot::StopMyWeapon (void)
@@ -194,7 +196,9 @@ void cAimbot::StopMyWeapon (void)
 	if ( bBotShooting )
 	{
 		bBotShooting = false;
+#ifdef HOOK_WINDOWS_PLATFORM
 		//mouse_event(MOUSEEVENTF_RIGHTUP | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+#endif // HOOK_WINDOWS_PLATFORM
 	}
 }
 
@@ -241,7 +245,7 @@ bool inline cAimbot::IsGoodWeapon (void)
 
 void cAimbot::SetMyRotation(UCanvas* Canvas, APawn* Target)
 {
-    FVector MyPos, HisPos;
+	FVector MyPos, HisPos;
 	FRotator Rotation;
 
 	HisPos = AimHeight(Target);
@@ -284,26 +288,26 @@ void cAimbot::SetMyRotation(UCanvas* Canvas, APawn* Target)
 
 APawn* cAimbot::GetBestTarget (UCanvas * Canvas,APawn* BestTarget, APawn* Target)
 {
-    if ( BestTarget == NULL )
+	if ( BestTarget == NULL )
 	{
-	    return Target;
+		return Target;
 	}
 	else
 	{
-	    if ( (Target->Location - Me->Location).Size() < (BestTarget->Location - Me->Location).Size() )
+		if ( (Target->Location - Me->Location).Size() < (BestTarget->Location - Me->Location).Size() )
 		{
-		    return Target;
+			return Target;
 		}
 		else
 		{
-		    return BestTarget;
+			return BestTarget;
 		}
 	}
 }
 
 bool cAimbot::IsVisible (APawn* Target)
 {
-    FVector MyPos, HisPos;
+	FVector MyPos, HisPos;
 
 	MyPos = Me->Location;
 	MyPos.Z += Me->BaseEyeHeight;
@@ -319,7 +323,11 @@ bool cAimbot::GoodAim ()
 {
 	if(bAutoAim == 2)
 	{
-		return false;//(GetAsyncKeyState(VK_LBUTTON) < 0 || GetAsyncKeyState(VK_RBUTTON) < 0);
+#ifdef HOOK_WINDOWS_PLATFORM
+		return (GetAsyncKeyState(VK_LBUTTON) < 0 || GetAsyncKeyState(VK_RBUTTON) < 0);
+#endif // HOOK_WINDOWS_PLATFORM
+		// Ponder for linux and mac platforms
+		return false;
 	}
 	else if(bAutoAim == 1) return true;
 

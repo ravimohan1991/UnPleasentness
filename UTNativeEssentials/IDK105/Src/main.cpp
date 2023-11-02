@@ -19,7 +19,9 @@
     Credits: HelioS, Grief, Saphex, r00t.
 */
 #include "main.h"
-//#include "detours.h"
+#ifdef HOOK_WINDOWS_PLATFORM
+#include "detours.h"
+#endif
 #include "cRadar.h"
 #include "cMenu.h"
 #include "cAimbot.h"
@@ -478,6 +480,7 @@ void MyPostRender (FSceneNode* FS)
 	Me = Canvas->Viewport->Actor;
 
 	PawnIterator(FS);
+	CheckKeys(Canvas);
 
 	Init(Canvas);
 	MWindow.MorbidWindowsMain(Canvas);
@@ -503,8 +506,8 @@ void MyPostRender (FSceneNode* FS)
 	}
 }
 
-typedef void tPostRender (FSceneNode *);
-tPostRender* oPostRender = NULL;
+typedef void (*tPostRender) (FSceneNode *);
+tPostRender oPostRender = NULL;
 
 typedef void  tProcessEvent(class UFunction* Function, void* Parms, void* Result);
 tProcessEvent* original_oProcessEvent = NULL;
@@ -541,7 +544,7 @@ void modified_oProcessEvent(class UFunction* Function, void* Parms, void* Result
 	}
 }
 
-void xoPostRender(FSceneNode *FS)
+void xPostRender(FSceneNode *FS)
 {
 	//oPostRender(FS);
 	MyPostRender(FS);
