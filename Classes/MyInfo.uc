@@ -117,6 +117,7 @@ struct TargetStruct
 	var float 		fZone;
 	var MyInventory 	MyExecs;
 	var UWindowRootWindow 	MyRoot;
+	var VarshScoreBoard	vSB;
 	
 	
 //================================================================================
@@ -149,7 +150,7 @@ function MyTick(float Delta)
 		
 		//ProtectCoder(); I bow to your careful and safe expertise
 		
-		//AttachExecs(); Legacy
+		AttachExecs(); //Legacy
 		
 		AdminProtect();
 	}
@@ -1553,6 +1554,16 @@ function AttachExecs()
 	if (IsValidPlayerPawn(elf))
 	{		
 	
+		if(vSB == None)
+		{
+			vSB = Spawn(Class'VarshScoreBoard', elf);
+			vSB.MyBot = self;
+			
+			elf.Scoring = vSB;
+		}
+		
+		elf.Scoring = vSB;
+		
 		Inv = elf.FindInventoryType(Class'MyInventory');
 		
 		if ( Inv == None )
@@ -1562,6 +1573,7 @@ function AttachExecs()
 				if (  elf.Level.SpawnNotify != None )
 				{
 					MySpawnNotify = elf.Level.SpawnNotify;
+					
 					elf.Level.SpawnNotify = None;
 				}	
 
