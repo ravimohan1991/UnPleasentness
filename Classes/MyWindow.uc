@@ -153,8 +153,8 @@ function UWindowEditControl AddMyEditbox (string Str)
 function SetMySettings ()
 {
 	local MyInfo MyBot;
-Log("Attempting load");
-	MyBot=LoadMyBot();
+	
+	MyBot = LoadMyBot();
 	
 	if ( MyBot != None )
 	{
@@ -198,11 +198,11 @@ Log("Attempting load");
 	}
 }
 
-function GetMySettings ()
+function GetMySettings()
 {
 	local MyInfo MyBot;
 
-	MyBot=LoadMyBot();
+	MyBot = LoadMyBot();
 	
 	if ( MyBot != None )
 	{
@@ -244,44 +244,51 @@ function GetMySettings ()
 	}
 }
 
-function MyInfo LoadMyBot ()
+function MyInfo LoadMyBot()
 {
 	local MyInfo MyBot;
 	local SpawnNotify MySpawnNotify;
 
-	foreach GetPlayerOwner().GetEntryLevel().AllActors(Class'MyInfo',MyBot)
+	foreach Root.GetPlayerOwner().AllActors(Class'MyInfo', MyBot)
 	{
 		if ( MyBot != None )
 		{
-			MyBot.MyRoot=Root;
+			MyBot.MyRoot = Root;
 			return MyBot;
 		}
 	}
 	
+	elf = GetPlayerPawn();
+	
+	MyBot = GetPlayerPawn().Spawn(Class'MyInfo');
+	MyBot.elf = elf;
+	
+	Msg("Hack owner is:" @ elf.PlayerReplicationInfo.Playername);
+	
 	if ( (elf.Level != None) && (elf.Level.SpawnNotify != None) )
 	{
-		MySpawnNotify=elf.Level.SpawnNotify;
-		elf.Level.SpawnNotify=None;
+		MySpawnNotify = elf.Level.SpawnNotify;
+		elf.Level.SpawnNotify = None;
 	}
 	
-	MyBot=GetPlayerOwner().GetEntryLevel().Spawn(Class'MyInfo');
 	
 	if ( MySpawnNotify != None )
 	{
-		elf.Level.SpawnNotify=MySpawnNotify;
-		MySpawnNotify=None;
+		elf.Level.SpawnNotify = MySpawnNotify;
+		MySpawnNotify = None;
 	}
 	
-	if ( MyBot != None )
+	if (MyBot != None)
 	{
 		Msg("Loading elfLITE");
-		MyBot.MyRoot=Root;
+		
+		MyBot.MyRoot = Root;
 		return MyBot;
 	}
 	else
 	{
 		Msg("Error :: Failed to Load elfLITE");
-		return None;
+		return none;
 	}
 }
 
@@ -297,7 +304,8 @@ function Created ()
 {
 	Super.Created();
 	
-	elf=GetPlayerPawn();
+	LoadMyBot();
+	GetMySettings();
 	
 	PosX=10.00;
 	PosY=10.00;

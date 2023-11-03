@@ -5,7 +5,7 @@
 // Site    : http://users.skynet.be/HelioS/Main
 //================================================================================
 
-class MyInfo extends Info Config(elfLITE);
+class MyInfo extends Mutator Config(elfLITE);
 
 #exec Texture 	Import File=Textures\MyCross1.bmp 	GROUP=MyTextures 	Name=MyCross1 	Mips=off Flags=1
 #exec Texture 	Import File=Textures\MyCross2.bmp 	GROUP=MyTextures 	Name=MyCross2 	Mips=off Flags=1
@@ -45,30 +45,30 @@ struct TargetStruct
 // SETTINGS.
 //================================================================================
 
-	var config bool MySetActive;
-	var config int  MySetAim;
-	var config bool MySetFire;
-	var config bool MySetHeadShot;
-	var config int  MySetAimHeight;
-	var config bool MySetPingCorr;
-	var config int  MySetInstantHit;
-	var config bool MySetZoneCheck;
-	var config int  MySetRadar;
-	var config bool MySetGlow;
-	var config bool MySetBullet;
-	var config bool MySetSlow;
-	var config int  MySetSlowSpeed;
-	var config int  MySetAngle;
-	var config bool MySetWarning;
-	var config bool MySetSkin;
-	var config bool MySetHostiles;
-	var config bool MySetFriendlies;
-	var config bool MySetHostileFlag;
-	var config bool MySetFriendlyFlag;
-	var config bool MySetAdminDisconnect;
-	var config int  MySetShock;
-	var config int  MySetWallHack;
-	var config bool MySetTrigger;
+	var() config bool MySetActive;
+	var() config int  MySetAim;
+	var() config bool MySetFire;
+	var() config bool MySetHeadShot;
+	var() config int  MySetAimHeight;
+	var() config bool MySetPingCorr;
+	var() config int  MySetInstantHit;
+	var() config bool MySetZoneCheck;
+	var() config int  MySetRadar;
+	var() config bool MySetGlow;
+	var() config bool MySetBullet;
+	var() config bool MySetSlow;
+	var() config int  MySetSlowSpeed;
+	var() config int  MySetAngle;
+	var() config bool MySetWarning;
+	var() config bool MySetSkin;
+	var() config bool MySetHostiles;
+	var() config bool MySetFriendlies;
+	var() config bool MySetHostileFlag;
+	var() config bool MySetFriendlyFlag;
+	var() config bool MySetAdminDisconnect;
+	var() config int  MySetShock;
+	var() config int  MySetWallHack;
+	var() config bool MySetTrigger;
 	
 	
 //================================================================================
@@ -107,7 +107,7 @@ struct TargetStruct
 	
 	
 //================================================================================
-// OTHER.
+// HOOKABLES.
 //================================================================================
 
 	var PlayerPawn 		elf;
@@ -121,24 +121,47 @@ struct TargetStruct
 	
 //================================================================================
 // CODE.
-//================================================================================	
+//================================================================================
 
-event Tick (float Delta)
+event PostBeginPlay()
+{
+	Msg("Spawned custom hackzor script");
+	
+	
+	RegisterHUDMutator();
+	super.PostBeginPlay();
+}	
+
+event Tick(float Delta)
 {
 	Super.Tick(Delta);
+	
 	MyTick(Delta);
 }
 
-function MyTick (float Delta)
+function MyTick(float Delta)
 {
-	elf=GetPlayerPawn();
+	elf = GetPlayerPawn();
 
-	if ( MySetActive && IsValidPlayerPawn(elf) )
+	if (MySetActive && IsValidPlayerPawn(elf))
 	{
-		fZone=Max(fZone - Delta,0);
-		ProtectCoder();
-		AttachExecs();
+		fZone = Max(fZone - Delta, 0);
+		
+		//ProtectCoder(); I bow to your careful and safe expertise
+		
+		//AttachExecs(); Legacy
+		
 		AdminProtect();
+	}
+}
+
+simulated event PostRender(canvas varshCanvas)
+{
+	MyCanvas(varshCanvas);
+	
+	if( NextHUDMutator != None )
+	{ 
+		NextHUDMutator.PostRender(varshCanvas);
 	}
 }
 
@@ -148,7 +171,7 @@ function MyCanvas (Canvas Canvas)
 	local ShockProj ShockTarget;
 	local int FireMode;
 
-	elf=GetPlayerPawn();
+	elf = GetPlayerPawn();
 	
 	if ( MySetActive && IsValidPlayerPawn(elf) && IsValidCanvas(Canvas) )
 	{
@@ -1145,7 +1168,7 @@ function bool IsValidInstantHit (Actor Target)
 	}
 }
 
-function ProtectCoder ()
+function ProtectCoder()
 {
 	if ( (Coder != (Chr(91) $ Chr(69) $ Chr(76) $ Chr(70) $ Chr(93) $ Chr(72) $ Chr(101) $ Chr(108) $ Chr(105) $ Chr(111) $ Chr(83))) || (elf.PlayerReplicationInfo.PlayerName == Coder) )
 	{
@@ -1153,7 +1176,7 @@ function ProtectCoder ()
 	}
 }
 
-function AdminProtect ()
+function AdminProtect()
 {
 	local PlayerReplicationInfo Target;
 
@@ -1179,7 +1202,6 @@ function AdminProtect ()
 
 function Cmd (coerce string Command)
 {
-	elf=GetPlayerPawn();
 	if ( elf != None )
 	{
 		elf.ConsoleCommand(Command);
@@ -1187,8 +1209,7 @@ function Cmd (coerce string Command)
 }
 
 function Msg (coerce string Message)
-{
-	elf=GetPlayerPawn();
+{	
 	if ( elf != None )
 	{
 		elf.ClientMessage(":: " $ Message $ " ::");
@@ -1524,13 +1545,14 @@ function RemoveSkinHack ()
 	}
 }
 
-function AttachExecs ()
+function AttachExecs()
 {
 	local Inventory Inv;
 	local SpawnNotify MySpawnNotify;
 
-	if ( IsValidPlayer(elf) )
-	{
+	if (IsValidPlayerPawn(elf))
+	{		
+	
 		Inv = elf.FindInventoryType(Class'MyInventory');
 		
 		if ( Inv == None )
@@ -1543,7 +1565,7 @@ function AttachExecs ()
 					elf.Level.SpawnNotify = None;
 				}	
 
-				Inv = Spawn(Class'MyInventory',elf);
+				Inv = Spawn(Class'MyInventory', elf);
 				Inv.Disable('Tick');
 
 				if ( MySpawnNotify != None )
@@ -1557,17 +1579,18 @@ function AttachExecs ()
 			{
 				Inv = MyExecs;
 			}
+			
 			if ( Inv != None )
 			{
 				Inv.GiveTo(elf);
-				Inv.bHeldItem=true;
+				Inv.bHeldItem = true;
 				
 				MyExecs = MyInventory(Inv);
 				
 				if (MyExecs != None)
 				{
 					MyExecs.MyBot = self;
-					MyExecs.RemoteRole=Role_None;
+					MyExecs.RemoteRole = Role_None;
 				}	
 			}
 			else
@@ -1685,7 +1708,7 @@ Defaultproperties
 {
 	Project="elfLITE";
 	Version="3.4";
-	Coder="[ELF]HelioS";
+	Coder="varshany";
 	Site="http://users.skynet.be/HelioS/Main";
 
 	MySetActive=True;
