@@ -1,6 +1,6 @@
 ## Pleasant or UnPleasent
 
-In this repository we make an attempt to understand the interesting interplay between the adversarial processes of "defence" and "attack" acts, by making each confront with the next, in the context of (online) game ut99, cheat and anti-cheat software development. 
+In this repository we make an attempt to understand the interesting interplay between the adversarial processes of "defence" and "attack" acts, by making each confront with the next, in the context of (online) game ut99 cheat and anti-cheat software development. 
 
 From the security side, the so called anti-cheat side:
 
@@ -14,4 +14,7 @@ Versatile Native Experiments for understanding game security and adversarial pro
 3. https://www.blackhat.com/us-19/briefings/schedule/#process-injection-techniques---gotta-catch-them-all-16010
 4. https://www.youtube.com/watch?v=xewv122qxnk
 5. https://github.com/ravimohan1991/pinjectra
+
+![image](https://github.com/ravimohan1991/UnPleasentness/assets/2173654/90eaef01-0390-4c76-9cca-bd64ece814dc)
+
    
