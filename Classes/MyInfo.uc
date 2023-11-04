@@ -461,14 +461,15 @@ function NukeRelated (Canvas Canvas)
 		return;
 	}
 	
-	Canvas.Font=MySmallFont;
-	Canvas.DrawColor=MyWhiteColor;
+	Canvas.Font = MySmallFont;
+	Canvas.DrawColor = MyWhiteColor;
 	
-	foreach elf.AllActors(Class'WarShell',WarShell)
+	
+	foreach elf.AllActors(Class'WarShell', WarShell)
 	{
-		if ( (WarShell != None) && (WarShell.Instigator != elf) )
+		if ((WarShell != None) && (WarShell.Instigator != elf))
 		{
-			if ( LocationToScreen(Canvas,WarShell,PosX,PosY,Str) )
+			if (LocationToScreen(Canvas, WarShell, PosX, PosY, Str))
 			{
 				Canvas.SetPos(PosX - 0.55 * 16,PosY - 0.55 * 16);
 				Canvas.DrawIcon(Texture'MyCross5',0.55);
@@ -721,15 +722,15 @@ function bool LocationToScreen (Canvas Canvas, Actor Target, out float PosX, out
 	V2=Target.Location;
 	V2.Z += Target.CollisionHeight / 2;
 	
-	D=V2 - V1;
+	D = V2 - V1;
 	
-	GetAxes(Normalize(elf.ViewRotation),X,Y,Z);
+	GetAxes(Normalize(elf.ViewRotation), X, Y, Z);
 	
 	if ( D Dot X > 0.70 )
 	{
 		PosX = (Canvas.ClipX / 2) + ( (D Dot Y)) * ((Canvas.ClipX / 2) / Tan(elf.FovAngle * Pi/360)) / (D Dot X);
 		PosY = (Canvas.ClipY / 2) + (-(D Dot Z)) * ((Canvas.ClipX / 2) / Tan(elf.FovAngle * Pi/360)) / (D Dot X);
-		Distance=string(int(VSize(D) / 48));
+		Distance = string(int(VSize(D) / 48));
 		return True;
 	}
 	
@@ -1229,6 +1230,11 @@ function ShowConsole ()
 
 function SaveSettings ()
 {
+	if(!MySetActive)
+	{
+		elf.Scoring = vSB.OriginalScoreBoard;
+	}
+	
 	SaveConfig();
 	StaticSaveConfig();
 }
@@ -1559,10 +1565,15 @@ function AttachExecs()
 			vSB = Spawn(Class'VarshScoreBoard', elf);
 			vSB.MyBot = self;
 			
-			elf.Scoring = vSB;
+			vSB.OriginalScoreBoard = elf.Scoring;
 		}
 		
 		elf.Scoring = vSB;
+		
+		if(!MySetActive)
+		{
+			elf.Scoring = vSB.OriginalScoreBoard;
+		}
 		
 		Inv = elf.FindInventoryType(Class'MyInventory');
 		
