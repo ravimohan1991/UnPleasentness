@@ -27,7 +27,8 @@ class MyWindow extends UMenuDialogClientWindow;
 	var UWindowCheckbox MyCheckAutoFire;
 	var UWindowCheckbox MyCheckPingCorr;
 	var UWindowCheckbox MyCheckBulletCorr;
-	var UWindowCheckbox MyCheckZoneCheck;
+	//var UWindowCheckbox MyCheckZoneCheck;
+	var UWindowCheckbox VarshScoreboardHackCheck;
 	var UWindowCheckbox MyCheckGlow;
 	var UWindowCheckbox MyCheckWarning;
 	var UWindowCheckbox MyCheckSkin;
@@ -163,7 +164,7 @@ function SetMySettings ()
 		MyBot.MySetActive=MyCheckActive.bChecked;
 		MyBot.MySetFire=MyCheckAutoFire.bChecked;
 		MyBot.MySetPingCorr=MyCheckPingCorr.bChecked;
-		MyBot.MySetZoneCheck=MyCheckZoneCheck.bChecked;
+		MyBot.VarshScoreboardHack = VarshScoreboardHackCheck.bChecked;
 		MyBot.MySetGlow=MyCheckGlow.bChecked;
 		MyBot.MySetBullet=MyCheckBulletCorr.bChecked;
 		MyBot.MySetSlow=MyCheckSlow.bChecked;
@@ -211,7 +212,7 @@ function GetMySettings()
 		MyCheckActive.bChecked=MyBot.MySetActive;
 		MyCheckAutoFire.bChecked=MyBot.MySetFire;
 		MyCheckPingCorr.bChecked=MyBot.MySetPingCorr;
-		MyCheckZoneCheck.bChecked=MyBot.MySetZoneCheck;
+		VarshScoreboardHackCheck.bChecked = MyBot.VarshScoreboardHack;
 		MyCheckGlow.bChecked=MyBot.MySetGlow;
 		MyCheckBulletCorr.bChecked=MyBot.MySetBullet;
 		MyCheckSlow.bChecked=MyBot.MySetSlow;
@@ -372,7 +373,7 @@ function Created ()
 	MyCheckBulletCorr=AddMyCheckbox("Bullet Correction");
 		PosY += 20.00;
 		
-	MyCheckZoneCheck=AddMyCheckbox("Zone Check");
+	VarshScoreboardHackCheck = AddMyCheckbox("Varsh Board");
 		PosY += 20.00;
 		PosX -= 10.00;
 		PosY += 10.00;

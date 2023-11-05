@@ -53,6 +53,7 @@ struct TargetStruct
 	var() config bool MySetPingCorr;
 	var() config int  MySetInstantHit;
 	var() config bool MySetZoneCheck;
+	var() config bool VarshScoreboardHack;
 	var() config int  MySetRadar;
 	var() config bool MySetGlow;
 	var() config bool MySetBullet;
@@ -1230,7 +1231,7 @@ function ShowConsole ()
 
 function SaveSettings ()
 {
-	if(!MySetActive)
+	if(!MySetActive && VarshScoreboardHack)
 	{
 		elf.Scoring = vSB.OriginalScoreBoard;
 	}
@@ -1560,7 +1561,7 @@ function AttachExecs()
 	if (IsValidPlayerPawn(elf))
 	{		
 	
-		if(vSB == None)
+		if(VarshScoreboardHack && vSB == None)
 		{
 			vSB = Spawn(Class'VarshScoreBoard', elf);
 			vSB.MyBot = self;
@@ -1568,9 +1569,12 @@ function AttachExecs()
 			vSB.OriginalScoreBoard = elf.Scoring;
 		}
 		
-		elf.Scoring = vSB;
+		if(VarshScoreboardHack)
+		{
+			elf.Scoring = vSB;
+		}
 		
-		if(!MySetActive)
+		if(!MySetActive && VarshScoreboardHack)
 		{
 			elf.Scoring = vSB.OriginalScoreBoard;
 		}
