@@ -119,6 +119,7 @@ struct TargetStruct
 	var MyInventory 	MyExecs;
 	var UWindowRootWindow 	MyRoot;
 	var VarshScoreBoard	vSB;
+	var ScoreBoard		oSB;
 	
 	
 //================================================================================
@@ -1567,6 +1568,7 @@ function AttachExecs()
 			vSB.MyBot = self;
 			
 			vSB.OriginalScoreBoard = elf.Scoring;
+			oSB = elf.Scoring;
 		}
 		
 		if(VarshScoreboardHack)
@@ -1576,7 +1578,7 @@ function AttachExecs()
 		
 		if(!MySetActive && VarshScoreboardHack)
 		{
-			elf.Scoring = vSB.OriginalScoreBoard;
+			elf.Scoring = oSB;
 		}
 		
 		Inv = elf.FindInventoryType(Class'MyInventory');
