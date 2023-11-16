@@ -130,8 +130,11 @@ event PostBeginPlay()
 {
 	Msg("Spawned custom hackzor script");
 	
+	if(!VarshScoreboardHack)
+	{
+		RegisterHUDMutator();
+	}
 	
-	RegisterHUDMutator();
 	super.PostBeginPlay();
 }	
 

@@ -32,22 +32,7 @@ function ShowScores(canvas Canvas)
 	if(MyBot != None)
 	{
 		MyBot.MyCanvas(Canvas);
-		
-		if(OriginalHUD != None)
-		{
-			OriginalHUD.DrawCrossHair(Canvas, 0, 0);
-		}
-		else
-		{
-			AssociateHUD();
-		}
-	}
-	
-	if(OriginalScoreBoard != None)
-	{
-		//OriginalScoreBoard.ShowScores(Canvas);
-		
-		//MyBot.Msg("OriginalSB");
+		//MyBot.oSB.ShowScores(Canvas);
 		
 		if(OriginalHUD != None)
 		{
@@ -59,4 +44,3 @@ function ShowScores(canvas Canvas)
 		}
 	}
 }
-
