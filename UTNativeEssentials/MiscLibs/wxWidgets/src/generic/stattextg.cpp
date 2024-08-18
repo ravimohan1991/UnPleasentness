@@ -84,7 +84,7 @@ void wxGenericStaticText::OnPaint(wxPaintEvent& WXUNUSED(event))
 
 wxSize wxGenericStaticText::DoGetBestClientSize() const
 {
-    wxClientDC dc(wxConstCast(this, wxGenericStaticText));
+    wxInfoDC dc(wxConstCast(this, wxGenericStaticText));
 
 #if wxUSE_MARKUP
     if ( m_markupText )
@@ -105,7 +105,7 @@ void wxGenericStaticText::SetLabel(const wxString& label)
     if ( m_markupText )
     {
         delete m_markupText;
-        m_markupText = NULL;
+        m_markupText = nullptr;
     }
 #endif // wxUSE_MARKUP
 

@@ -23,6 +23,9 @@
 #include "wx/filename.h"
 #include "wx/wfstream.h"
 
+#include <memory>
+#include <unordered_map>
+
 // This test uses httpbin service and by default uses the mirror at the
 // location below, which seems to be more reliable than the main site at
 // https://httpbin.org. Any other mirror, including a local one, which can be
@@ -116,7 +119,7 @@ public:
         }
     }
 
-    void Notify() wxOVERRIDE
+    void Notify() override
     {
         WARN("Exiting loop on timeout");
         loop.Exit();
@@ -124,7 +127,7 @@ public:
 
     void OnData(wxWebRequestEvent& evt)
     {
-        // Count all bytes recieved via data event for Storage_None
+        // Count all bytes received via data event for Storage_None
         dataSize += evt.GetDataSize();
     }
 
@@ -261,7 +264,8 @@ TEST_CASE_METHOD(RequestFixture,
     pos += strlen(expectedKey);
 
     // There may, or not, be a space after it.
-    while ( wxIsspace(response[pos]) )
+    // And the value may be returned in an array.
+    while ( wxIsspace(response[pos]) || response[pos] == '[' )
         pos++;
 
     const char* expectedValue = "\"3.14159265358979323\"";
@@ -394,7 +398,7 @@ TEST_CASE_METHOD(RequestFixture,
         return;
 
     Create("/put");
-    wxScopedPtr<wxInputStream> is(new wxFileInputStream("horse.png"));
+    std::unique_ptr<wxInputStream> is(new wxFileInputStream("horse.png"));
     REQUIRE( is->IsOk() );
 
     request.SetData(is.release(), "image/png");
@@ -538,7 +542,7 @@ TEST_CASE_METHOD(RequestFixture,
     }
 }
 
-WX_DECLARE_STRING_HASH_MAP(wxString, wxWebRequestHeaderMap);
+using wxWebRequestHeaderMap = std::unordered_map<wxString, wxString>;
 
 namespace wxPrivate
 {

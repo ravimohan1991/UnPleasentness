@@ -11,11 +11,7 @@
 #if defined(_LARGEFILE64_SOURCE) && _LFS64_LARGEFILE-0
 #  define LSEEK lseek64
 #else
-   #ifdef UDK_LINUX_PLATFORM
-	#define LSEEK fseek
-   #else
-	#define LSEEK lseek
-   #endif
+#  define LSEEK lseek
 #endif
 #endif
 
@@ -34,7 +30,7 @@ local gzFile gz_open OF((const void *, int, const char *));
 
    The gz_strwinerror function does not change the current setting of
    GetLastError. */
-char ZLIB_INTERNAL *gz_strwinerror (error)
+char ZLIB_INTERNAL *gz_strwinerror(error)
      DWORD error;
 {
     static char buf[1024];

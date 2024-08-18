@@ -72,7 +72,7 @@ public:
     wxWebAuthChallenge& operator=(const wxWebAuthChallenge& other);
     ~wxWebAuthChallenge();
 
-    bool IsOk() const { return m_impl.get() != NULL; }
+    bool IsOk() const { return m_impl.get() != nullptr; }
 
     Source GetSource() const;
 
@@ -94,7 +94,7 @@ public:
     wxWebResponse& operator=(const wxWebResponse& other);
     ~wxWebResponse();
 
-    bool IsOk() const { return m_impl.get() != NULL; }
+    bool IsOk() const { return m_impl.get() != nullptr; }
 
     wxFileOffset GetContentLength() const;
 
@@ -103,6 +103,8 @@ public:
     wxString GetHeader(const wxString& name) const;
 
     wxString GetMimeType() const;
+
+    wxString GetContentType() const;
 
     int GetStatus() const;
 
@@ -117,9 +119,11 @@ public:
     wxString GetDataFile() const;
 
 protected:
-    // Ctor is used by wxWebRequest and wxWebRequestImpl.
+    // Ctor is used by wxWebRequest and implementation classes to create public
+    // objects from the existing implementation pointers.
     friend class wxWebRequest;
     friend class wxWebRequestImpl;
+    friend class wxWebResponseImpl;
     explicit wxWebResponse(const wxWebResponseImplPtr& impl);
 
     wxWebResponseImplPtr m_impl;
@@ -150,7 +154,7 @@ public:
     wxWebRequest& operator=(const wxWebRequest& other);
     ~wxWebRequest();
 
-    bool IsOk() const { return m_impl.get() != NULL; }
+    bool IsOk() const { return m_impl.get() != nullptr; }
 
     void SetHeader(const wxString& name, const wxString& value);
 
@@ -193,9 +197,11 @@ public:
     bool IsPeerVerifyDisabled() const;
 
 private:
-    // Ctor is used by wxWebSession and wxWebRequestImpl.
+    // Ctor is used by wxWebSession and implementation classes to create
+    // wxWebRequest objects from the existing implementation pointers.
     friend class wxWebSession;
     friend class wxWebRequestImpl;
+    friend class wxWebResponseImpl;
     explicit wxWebRequest(const wxWebRequestImplPtr& impl);
 
     wxWebRequestImplPtr m_impl;
@@ -239,6 +245,8 @@ public:
     bool IsOpened() const;
 
     void Close();
+
+    bool EnablePersistentStorage(bool enable = true);
 
     wxWebSessionHandle GetNativeHandle() const;
 
@@ -285,7 +293,7 @@ public:
 
     void SetDataBuffer(const wxMemoryBuffer& dataBuf) { m_dataBuf = dataBuf; }
 
-    wxEvent* Clone() const wxOVERRIDE { return new wxWebRequestEvent(*this); }
+    wxEvent* Clone() const override { return new wxWebRequestEvent(*this); }
 
 private:
     wxWebRequest::State m_state;

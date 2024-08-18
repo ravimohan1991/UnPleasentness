@@ -20,10 +20,6 @@
 
 #include <QtWidgets/QPushButton>
 
-wxButton::wxButton()
-{
-}
-
 wxButton::wxButton(wxWindow *parent, wxWindowID id,
        const wxString& label,
        const wxPoint& pos,
@@ -44,14 +40,14 @@ bool wxButton::Create(wxWindow *parent, wxWindowID id,
     QtCreate(parent);
     SetLabel( label.IsEmpty() && wxIsStockID( id ) ? wxGetStockLabel( id ) : label );
 
-    return QtCreateControl( parent, id, pos, size, style, validator, name );
+    return wxButtonBase::Create( parent, id, pos, size, style, validator, name );
 }
 
 wxWindow *wxButton::SetDefault()
 {
     wxWindow *oldDefault = wxButtonBase::SetDefault();
 
-    m_qtPushButton->setDefault( true );
+    GetQPushButton()->setDefault( true );
 
     return oldDefault;
 

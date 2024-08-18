@@ -28,3 +28,4 @@ target_include_directories(UEHook
 )
 
 target_compile_definitions(UEHook PUBLIC UEHook)
+target_link_libraries(UEHook PUBLIC wx::core wx::aui)

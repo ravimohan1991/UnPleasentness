@@ -14,12 +14,15 @@
 #include "wx/qt/private/converter.h"
 #include <QtCore/QStringList>
 #include <QtWidgets/QApplication>
+#include <QSurfaceFormat>
 
 wxIMPLEMENT_DYNAMIC_CLASS(wxApp, wxEvtHandler);
 
 wxApp::wxApp()
 {
     m_qtArgc = 0;
+
+    WXAppConstructed();
 }
 
 
@@ -51,8 +54,13 @@ bool wxApp::Initialize( int &argc, wxChar **argv )
     {
         m_qtArgv[i] = wxStrdupA(wxConvUTF8.cWX2MB(argv[i]));
     }
-    m_qtArgv[argc] = NULL;
+    m_qtArgv[argc] = nullptr;
     m_qtArgc = argc;
+
+    // Use SingleBuffer mode by default to reduce latency.
+    QSurfaceFormat format;
+    format.setSwapBehavior(QSurfaceFormat::SwapBehavior::SingleBuffer);
+    QSurfaceFormat::setDefaultFormat(format);
 
     m_qtApplication.reset(new QApplication(m_qtArgc, m_qtArgv.get()));
 
@@ -72,15 +80,11 @@ bool wxApp::Initialize( int &argc, wxChar **argv )
         argv = new wxChar *[qtArgs.size() + 1];
         for ( int i = 0; i < qtArgs.size(); i++ )
         {
-#if wxUSE_UNICODE
             argv[i] = wxStrdupW( wxConvUTF8.cMB2WX( qtArgs[i].toUtf8().data() ) );
-#else // wxUSE_UNICODE
-            argv[i] = wxStrdupA( wxConvUTF8.cMB2WX( qtArgs[i].toUtf8().data() ) );
-#endif // wxUSE_UNICODE
         }
 
         argc = m_qtApplication->arguments().size();
-        argv[argc] = NULL;
+        argv[argc] = nullptr;
     }
 
     return true;

@@ -266,7 +266,7 @@ TEST_CASE_METHOD(NumValidatorTestCase, "ValNum::Interactive", "[valnum]")
     wxLocale loc(wxLANGUAGE_ENGLISH_UK, wxLOCALE_DONT_LOAD_DEFAULT);
 
     m_text->SetValidator(
-        wxIntegerValidator<unsigned>(NULL, wxNUM_VAL_THOUSANDS_SEPARATOR));
+        wxIntegerValidator<unsigned>(nullptr, wxNUM_VAL_THOUSANDS_SEPARATOR));
 
     // Create a sibling text control to be able to switch focus and thus
     // trigger the control validation/normalization.
@@ -281,6 +281,7 @@ TEST_CASE_METHOD(NumValidatorTestCase, "ValNum::Interactive", "[valnum]")
 
     // Entering '-' in a control with positive range is not allowed.
     m_text->SetFocus();
+    wxYield();
     sim.Char('-');
     wxYield();
     CHECK( m_text->GetValue() == "" );
@@ -337,15 +338,45 @@ TEST_CASE_METHOD(NumValidatorTestCase, "ValNum::Interactive", "[valnum]")
 
 
     // Also test the range constraint.
+    valFloat.SetRange(10., 20.);
+    text2->SetValidator(valFloat);
     text2->Clear();
 
+    // Entering a value which is out of range but within
+    // the extended input range is allowed.
     sim.Char('9');
     wxYield();
     CHECK( text2->GetValue() == "9" );
 
+    // Entering a value greater than the positive range maximum
+    // is not allowed.
     sim.Char('9');
     wxYield();
     CHECK( text2->GetValue() == "9" );
+
+    // A value that is out of range but within the extended input
+    // range must be clamped to the valid range on focus loss.
+    m_text->SetFocus();
+    wxYield();
+    CHECK( text2->GetValue() == "10.000" );
+
+    // Repeat the test with a negative invalid value.
+    valFloat.SetRange(-20., -10.);
+    text2->SetValidator(valFloat);
+    text2->Clear();
+    text2->SetFocus();
+
+    sim.Text("-2");
+    wxYield();
+    CHECK( text2->GetValue() == "-2" );
+
+    sim.Char('2');
+    wxYield();
+    CHECK( text2->GetValue() == "-2" );
+
+    m_text->SetFocus();
+    wxYield();
+    CHECK( text2->GetValue() == "-10.000" );
 }
 
 #endif // wxUSE_UIACTIONSIMULATOR

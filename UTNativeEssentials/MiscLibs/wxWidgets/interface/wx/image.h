@@ -29,7 +29,14 @@ enum wxImageResolution
  */
 enum wxImageResizeQuality
 {
-    /// Simplest and fastest algorithm.
+    /**
+        Simplest and fastest algorithm.
+
+        In wxWidgets versions before 3.3.0 this used to be the same as
+        wxIMAGE_QUALITY_NORMAL, but this is no longer the case when downscaling
+        the images. You can use the new wxIMAGE_QUALITY_FAST as a synonym for
+        this algorithm if speed is paramount.
+     */
     wxIMAGE_QUALITY_NEAREST,
 
     /// Compromise between wxIMAGE_QUALITY_NEAREST and wxIMAGE_QUALITY_BICUBIC.
@@ -46,16 +53,34 @@ enum wxImageResizeQuality
     wxIMAGE_QUALITY_BOX_AVERAGE,
 
     /**
-    Default image resizing algorithm used by wxImage::Scale(). Currently
-    the same as wxIMAGE_QUALITY_NEAREST.
+        Default image resizing algorithm used by wxImage::Scale().
+
+        Currently this is the same as wxIMAGE_QUALITY_NEAREST when enlarging
+        the image (in at least one direction) and wxIMAGE_QUALITY_BILINEAR when
+        reducing it, which produces relatively good results for the images
+        typically used for the icons in the GUI applications.
     */
     wxIMAGE_QUALITY_NORMAL,
+
+    /**
+        Fastest image resizing algorithm.
+
+        Currently this is the same as wxIMAGE_QUALITY_NEAREST, but this may
+        change in the future. Please use this value if speed is more important
+        than the quality of the result.
+
+        @since 3.3.0
+     */
+    wxIMAGE_QUALITY_FAST,
 
     /**
     Best image resizing algorithm. Since version 2.9.2 this results in
     wxIMAGE_QUALITY_BOX_AVERAGE being used when reducing the size of the
     image (meaning that both the new width and height will be smaller than
     the original size). Otherwise wxIMAGE_QUALITY_BICUBIC is used.
+
+    This algorithm is the slowest, but may produce better results, especially
+    for photogenic images.
     */
     wxIMAGE_QUALITY_HIGH
 };
@@ -887,7 +912,7 @@ public:
     */
     wxImage Rotate(double angle, const wxPoint& rotationCentre,
                    bool interpolating = true,
-                   wxPoint* offsetAfterRotation = NULL) const;
+                   wxPoint* offsetAfterRotation = nullptr) const;
 
     /**
         Returns a copy of the image rotated 90 degrees in the direction
@@ -1683,7 +1708,7 @@ public:
         wxImage takes ownership of the pointer and will free it unless @a static_data
         parameter is set to @true -- in this case the caller should do it.
     */
-    void SetAlpha(unsigned char* alpha = NULL,
+    void SetAlpha(unsigned char* alpha = nullptr,
                   bool static_data = false);
 
     /**
@@ -2113,7 +2138,7 @@ public:
     // find first colour that is not used in the image and has higher
     // RGB values than RGB(startR, startG, startB)
     //
-    // returns true and puts this colour in r, g, b (each of which may be NULL)
+    // returns true and puts this colour in r, g, b (each of which may be @NULL)
     // on success or returns false if there are no more free colours
     bool FindFirstUnusedColour(unsigned char *r,
                                unsigned char *g,

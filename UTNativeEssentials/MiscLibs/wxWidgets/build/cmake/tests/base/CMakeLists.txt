@@ -89,7 +89,6 @@ set(TEST_SRC
     uris/ftp.cpp
     uris/uris.cpp
     uris/url.cpp
-    vectors/vectors.cpp
     weakref/evtconnection.cpp
     weakref/weakref.cpp
     xlocale/xlocale.cpp
@@ -107,6 +106,8 @@ if(wxUSE_XML)
 endif()
 
 set(TEST_DATA
+    intl/en_GB/internat.mo
+    intl/en_GB/internat.po
     intl/fr/internat.mo
     intl/fr/internat.po
     intl/ja/internat.mo

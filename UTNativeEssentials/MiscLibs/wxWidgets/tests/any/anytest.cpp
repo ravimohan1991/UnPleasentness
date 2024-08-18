@@ -479,19 +479,19 @@ class wxMyVariantData : public wxVariantData
 {
 public:
     wxMyVariantData(const MyClass& value)
+        : m_value(value)
     {
-        m_value = value;
     }
 
-    virtual bool Eq(wxVariantData& WXUNUSED(data)) const wxOVERRIDE
+    virtual bool Eq(wxVariantData& WXUNUSED(data)) const override
     {
         return false;
     }
 
     // What type is it? Return a string name.
-    virtual wxString GetType() const wxOVERRIDE { return "MyClass"; }
+    virtual wxString GetType() const override { return "MyClass"; }
 
-    virtual wxVariantData* Clone() const wxOVERRIDE
+    virtual wxVariantData* Clone() const override
     {
         return new wxMyVariantData(m_value);
     }
@@ -570,9 +570,7 @@ void wxAnyTestCase::wxVariantConversions()
     res = any.GetAs(&variant);
     CPPUNIT_ASSERT(res);
     CPPUNIT_ASSERT(variant.GetType() == "string");
-#if wxUSE_UNICODE
     CPPUNIT_ASSERT(variant.GetString() == L"ABC");
-#endif
 
     any = vDouble;
     double d = any.As<double>();
@@ -659,7 +657,7 @@ void wxAnyTestCase::wxVariantConversions()
     CPPUNIT_ASSERT(variant[0].GetLong() == 15);
     CPPUNIT_ASSERT(variant[1].GetString() == "abc");
     // Avoid the memory leak.
-    WX_CLEAR_LIST(wxAnyList, anyList);
+    wxClearList(anyList);
 
     any = wxAny(vCustomType);
     CPPUNIT_ASSERT(wxANY_CHECK_TYPE(any, wxVariantData*));
@@ -682,7 +680,7 @@ public:
 
     virtual bool ConvertValue(const wxAnyValueBuffer& src,
                               wxAnyValueType* dstType,
-                              wxAnyValueBuffer& dst) const wxOVERRIDE
+                              wxAnyValueBuffer& dst) const override
     {
         MyClass value = GetValue(src);
 

@@ -97,7 +97,7 @@ public:
         by OnRun() and which dispatches all events sent from the native toolkit
         to the application (except when new event loops are temporarily set-up).
         The returned value maybe @NULL. Put initialization code which needs a
-        non-@NULL main event loop into OnEventLoopEnter().
+        non-null main event loop into OnEventLoopEnter().
     */
     wxEventLoopBase* GetMainLoop() const;
 
@@ -284,8 +284,7 @@ public:
         @param line
             the line number in this file where the assert occurred
         @param func
-            the name of the function where the assert occurred, may be
-            empty if the compiler doesn't support C99 \__FUNCTION__
+            the name of the function where the assert occurred
         @param cond
             the condition of the failed assert in text form
         @param msg
@@ -936,7 +935,7 @@ public:
         Works like SafeYield() with @e onlyIfNeeded == @true except that
         it allows the caller to specify a mask of events to be processed.
 
-        See wxAppConsole::YieldFor for more info.
+        See wxEventLoopBase::YieldFor() for more info.
     */
     virtual bool SafeYieldFor(wxWindow *win, long eventsToProcess);
 
@@ -964,6 +963,69 @@ public:
         @onlyfor{wxmsw}
     */
     bool ProcessMessage(WXMSG* msg);
+
+
+    /**
+        Possible parameters for SetAppearance().
+
+        @since 3.3.0
+    */
+    enum class Appearance
+    {
+        System, ///< Use system default appearance.
+        Light,  ///< Use light appearance.
+        Dark    ///< Use dark appearance.
+    };
+
+    /**
+        Possible values returned by SetAppearance().
+
+        @since 3.3.0
+    */
+    enum class AppearanceResult
+    {
+        Failure,     ///< Changing the appearance failed.
+        Ok,          ///< Appearance was successfully changed.
+        CannotChange ///< Appearance can't be changed any more.
+    };
+
+    /**
+        Request using either system default or explicitly light or dark theme
+        for the application.
+
+        Under GTK and macOS applications use the system default appearance by
+        default, and so it is only useful to call this function with either
+        Appearance::Light or Appearance::Dark parameters if you need to
+        override the default system appearance. The effect of calling this
+        function is immediate, i.e. this function returns
+        AppearanceResult::Ok, and affects all the existing windows as well
+        as any windows created after this call.
+
+        Under MSW, the default appearance is always light and the applications
+        that want to follow the system appearance need to explicitly call this
+        function with Appearance::System parameter in order to do it. Please
+        note using dark appearance under MSW requires using non-documented
+        system functions and has several known limitations, please see
+        MSWEnableDarkMode() for more details. Also, on this platform the
+        appearance can be only set before any windows are created and calling
+        this function too late will return AppearanceResult::CannotChange.
+
+        Note that to query the current appearance, you can use
+        wxSystemAppearance, see wxSystemSettings::GetAppearance().
+
+        @return AppearanceResult::Ok if the appearance was successfully
+            changed or had been already set to the requested value,
+            AppearanceResult::CannotChange if the appearance can't be changed
+            any more because it's too late to do it but could be changed if
+            done immediately on next program launch (only returned by wxMSW
+            currently) or AppearanceResult::Failure if changing the appearance
+            failed for some other reason, e.g. because `GTK_THEME` is defined
+            when using wxGTK of this function is not implemented at all for
+            the current platform.
+
+        @since 3.3.0
+    */
+    AppearanceResult SetAppearance(Appearance appearance);
 
     /**
         Set display mode to use. This is only used in framebuffer wxWidgets
@@ -1004,7 +1066,7 @@ public:
         first frame or dialog (or better, any wxTopLevelWindow) in its top-level
         window list, when it needs to use the top window.
         If you previously called SetTopWindow() and now you need to restore this
-        automatic behaviour you can call @code wxApp::SetTopWindow(NULL) @endcode.
+        automatic behaviour you can call `wxApp::SetTopWindow(nullptr)`.
 
         @param window
             The new top window.
@@ -1041,6 +1103,11 @@ public:
 
         This function can be called to suppress GTK diagnostic messages that
         are output on the standard error stream by default.
+
+        If @c WXSUPPRESS_GTK_DIAGNOSTICS environment variable is set to a
+        non-zero value, wxWidgets automatically calls this function on program
+        startup with the value of this variable as @a flags if it's a number or
+        with the default flags value otherwise.
 
         The default value of the argument disables all messages, but you
         can pass in a mask flag to specifically disable only particular
@@ -1181,6 +1248,58 @@ public:
 
     ///@}
 
+    /**
+        @name MSW-specific functions
+    */
+    //@{
+
+    /**
+        Enable experimental dark mode support for MSW applications.
+
+        This function uses @e undocumented, and unsupported by Microsoft,
+        functions to enable dark mode support for the desktop applications
+        under Windows 10 20H1 or later (including all Windows 11 versions).
+
+        Note that dark mode can also be enabled by setting the "msw.dark-mode"
+        @ref wxSystemOptions "system option" via an environment variable from
+        outside the application or by calling SetAppearance() with either
+        `System` or `Dark` parameter.
+
+        Known limitations of dark mode support include:
+
+        - Anything based on `TaskDialog()` Win32 API doesn't support dark mode:
+          wxMessageBox(), wxMessageDialog, wxRichMessageDialog, wxProgressDialog
+          and simple (i.e., without hyperlink or licence) wxAboutBox(). Consider
+          using generic versions (e.g. wxGenericMessageDialog or wxGenericProgressDialog)
+          if dark mode support is more important than using the native dialog.
+        - The following dialogs wrapping common windows dialogs don't support
+          dark mode: wxColourDialog, wxFindReplaceDialog, wxFontDialog,
+          wxPageSetupDialog, wxPrintDialog.
+        - wxDatePickerCtrl and wxTimePickerCtrl don't support dark mode and
+          use the same (light) background as by default in it.
+        - Toolbar items for which wxToolBar::SetDropdownMenu() was called
+          don't draw the menu drop-down correctly, making it almost
+          invisible.
+        - Calling wxMenu::Break() will result in the menu being light.
+
+        @param flags Can include @c wxApp::DarkMode_Always to force enabling
+            dark mode for the application, even if the system doesn't use the
+            dark mode by default. Otherwise dark mode is only used if it is the
+            default mode for the applications on the current system.
+        @param settings If specified, allows to customize dark mode appearance.
+            Please see wxDarkModeSettings documentation for more information.
+
+        @return @true if dark mode support was enabled, @false if it couldn't
+            be done, most likely because the system doesn't support dark mode.
+
+        @onlyfor{wxmsw}
+
+        @since 3.3.0
+     */
+    bool
+    MSWEnableDarkMode(int flags = 0, wxDarkModeSettings* settings = nullptr);
+
+    //@}
 };
 
 
@@ -1402,7 +1521,7 @@ bool wxYield();
 
     @header{wx/app.h}
 */
-bool wxSafeYield(wxWindow* win = NULL, bool onlyIfNeeded = false);
+bool wxSafeYield(wxWindow* win = nullptr, bool onlyIfNeeded = false);
 
 /**
     This function initializes wxWidgets in a platform-dependent way. Use this if you
@@ -1441,8 +1560,8 @@ int wxEntry(int& argc, wxChar** argv);
     @header{wx/app.h}
 */
 int wxEntry(HINSTANCE hInstance,
-            HINSTANCE hPrevInstance = NULL,
-            char* pCmdLine = NULL,
+            HINSTANCE hPrevInstance = nullptr,
+            char* pCmdLine = nullptr,
             int nCmdShow = SW_SHOWNORMAL);
 
 ///@}
